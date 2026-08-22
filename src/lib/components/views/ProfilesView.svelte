@@ -22,9 +22,9 @@ let showDeleteConfirm = $state(false);
 let deleteTargetIndex = $state<number | null>(null);
 
 let columns = $state<ColumnConfig[]>([
-  { key: "index", label: "No./ID", visible: true, canHide: true, width: 70, align: "center" },
+  { key: "index", label: "Index", visible: true, canHide: true, width: 70, align: "center" },
   { key: "hostEmulator", label: "Engine", visible: true, canHide: true, width: 110 },
-  { key: "name", label: "Name", visible: true, canHide: false, width: 170 },
+  { key: "name", label: "Instance Name", visible: true, canHide: false, width: 170 },
   { key: "status", label: "Status", visible: true, canHide: true, width: 105, align: "center" },
   { key: "resolution", label: "Resolution & DPI", visible: true, canHide: true, width: 160 },
   { key: "model", label: "Device Model", visible: true, canHide: true, width: 150 },
@@ -57,7 +57,7 @@ function openModify(emu: Emulator) {
 }
 </script>
 
-<div class="flex-1 flex flex-col h-full gap-3 overflow-hidden">
+<div class="flex-1 flex flex-col h-full gap-3 overflow-hidden font-sans">
   <!-- Top Command Toolbar -->
   <div
     class="flex flex-wrap items-center justify-between gap-3 p-3 bg-[#141517] border border-[#25272b] rounded-2xl shadow-xs"
@@ -123,7 +123,7 @@ function openModify(emu: Emulator) {
     <div class="flex items-center gap-2.5">
       <!-- Status Segmented Control -->
       <div
-        class="flex items-center p-0.5 bg-[#0e0f11] border border-[#25272b] rounded-xl text-xs font-sans font-semibold"
+        class="flex items-center p-0.5 bg-[#0e0f11] border border-[#25272b] rounded-xl text-xs font-semibold"
       >
         <button
           type="button"
@@ -192,31 +192,41 @@ function openModify(emu: Emulator) {
     >
       {#snippet rowSnippet(item: Emulator, isSelected: boolean)}
         <!-- No./ID -->
-        {#if columns.find(c => c.key === "index")?.visible}
-          <td class="py-2.5 px-3 text-center font-mono font-bold text-[#8c8c8c] border-r border-[#25272b]/30">
+        {#if columns.find((c) => c.key === "index")?.visible}
+          <td
+            class="py-2.5 px-3 text-center font-mono font-bold text-[#8c8c8c] border-r border-[#25272b]/20"
+          >
             #{item.index}
           </td>
         {/if}
 
         <!-- Engine -->
-        {#if columns.find(c => c.key === "hostEmulator")?.visible}
-          <td class="py-2.5 px-3 font-sans text-xs text-[#d9d9d9] border-r border-[#25272b]/30">
-            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-[#18191c] border border-[#25272b] text-[11px] font-medium text-[#8c8c8c]">
+        {#if columns.find((c) => c.key === "hostEmulator")?.visible}
+          <td
+            class="py-2.5 px-3 text-xs text-[#d9d9d9] border-r border-[#25272b]/20"
+          >
+            <span
+              class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-[#18191c] border border-[#25272b] text-[11px] font-medium text-[#8c8c8c]"
+            >
               LDPlayer 9
             </span>
           </td>
         {/if}
 
         <!-- Name -->
-        {#if columns.find(c => c.key === "name")?.visible}
-          <td class="py-2.5 px-3 font-bold text-white border-r border-[#25272b]/30">
+        {#if columns.find((c) => c.key === "name")?.visible}
+          <td
+            class="py-2.5 px-3 font-bold text-white border-r border-[#25272b]/20"
+          >
             {item.name}
           </td>
         {/if}
 
         <!-- Status -->
-        {#if columns.find(c => c.key === "status")?.visible}
-          <td class="py-2.5 px-3 text-center border-r border-[#25272b]/30">
+        {#if columns.find((c) => c.key === "status")?.visible}
+          <td
+            class="py-2.5 px-3 text-center border-r border-[#25272b]/20"
+          >
             {#if item.is_running}
               <span
                 class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#00b578]/10 text-[#00b578] border border-[#00b578]/25"
@@ -235,47 +245,60 @@ function openModify(emu: Emulator) {
         {/if}
 
         <!-- Resolution & DPI -->
-        {#if columns.find(c => c.key === "resolution")?.visible}
-          <td class="py-2.5 px-3 font-mono text-[11px] text-[#8c8c8c] border-r border-[#25272b]/30">
+        {#if columns.find((c) => c.key === "resolution")?.visible}
+          <td
+            class="py-2.5 px-3 font-mono text-[11px] text-[#8c8c8c] border-r border-[#25272b]/20"
+          >
             {item.width} × {item.height} ({item.dpi} DPI)
           </td>
         {/if}
 
         <!-- Device Model -->
-        {#if columns.find(c => c.key === "model")?.visible}
-          <td class="py-2.5 px-3 text-[#d9d9d9] text-xs border-r border-[#25272b]/30">
+        {#if columns.find((c) => c.key === "model")?.visible}
+          <td
+            class="py-2.5 px-3 text-[#d9d9d9] text-xs border-r border-[#25272b]/20"
+          >
             {item.brand} {item.model}
           </td>
         {/if}
 
         <!-- Proxy -->
-        {#if columns.find(c => c.key === "proxy")?.visible}
-          <td class="py-2.5 px-3 font-mono text-[11px] text-[#8c8c8c] border-r border-[#25272b]/30">
+        {#if columns.find((c) => c.key === "proxy")?.visible}
+          <td
+            class="py-2.5 px-3 font-mono text-[11px] text-[#8c8c8c] border-r border-[#25272b]/20"
+          >
             {item.proxy || "Direct (No Proxy)"}
           </td>
         {/if}
 
         <!-- CPU / RAM -->
-        {#if columns.find(c => c.key === "metrics")?.visible}
-          <td class="py-2.5 px-3 font-mono text-[11px] text-[#8c8c8c] border-r border-[#25272b]/30">
+        {#if columns.find((c) => c.key === "metrics")?.visible}
+          <td
+            class="py-2.5 px-3 font-mono text-[11px] text-[#8c8c8c] border-r border-[#25272b]/20"
+          >
             2 Cores • 2048 MB
           </td>
         {/if}
 
         <!-- PID -->
-        {#if columns.find(c => c.key === "pid")?.visible}
-          <td class="py-2.5 px-3 text-center font-mono text-[#8c8c8c] border-r border-[#25272b]/30">
+        {#if columns.find((c) => c.key === "pid")?.visible}
+          <td
+            class="py-2.5 px-3 text-center font-mono text-[#8c8c8c] border-r border-[#25272b]/20"
+          >
             {item.pid > 0 ? item.pid : "-"}
           </td>
         {/if}
 
         <!-- Action Buttons (Sticky Right) -->
-        {#if columns.find(c => c.key === "actions")?.visible}
+        {#if columns.find((c) => c.key === "actions")?.visible}
+          <!-- svelte-ignore a11y_click_events_have_key_events -->
+          <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
           <td
-            class="py-2.5 px-3 text-right sticky right-0 z-10 shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.3)] {isSelected
-              ? 'bg-[#121c18]'
+            class="py-2.5 px-3 text-right sticky right-0 z-10 shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.25)] group-hover:z-30 focus-within:z-30 {isSelected
+              ? 'bg-[color-mix(in_srgb,#00b578_12%,#141517)] group-hover:bg-[color-mix(in_srgb,#00b578_12%,#1f2125)]'
               : 'bg-[#141517] group-hover:bg-[#1f2125]'}"
             onclick={(e) => e.stopPropagation()}
+            onmousedown={(e) => e.stopPropagation()}
           >
             <div class="flex items-center justify-end gap-1.5">
               {#if item.is_running}

@@ -32,7 +32,7 @@ function handleImport() {
 }
 </script>
 
-<div class="flex-1 flex flex-col h-full gap-3 overflow-hidden">
+<div class="flex-1 flex flex-col h-full gap-3 overflow-hidden font-sans">
   <!-- Accounts Command Toolbar -->
   <div
     class="flex flex-wrap items-center justify-between gap-3 p-3 bg-[#141517] border border-[#25272b] rounded-2xl shadow-xs"
@@ -73,17 +73,23 @@ function handleImport() {
     >
       {#snippet rowSnippet(item: FacebookAccount, isSelected: boolean, index: number)}
         <!-- Index -->
-        {#if columns.find(c => c.key === "index")?.visible}
-          <td class="py-2.5 px-3 text-center font-mono font-bold text-[#8c8c8c] border-r border-[#25272b]/30">
+        {#if columns.find((c) => c.key === "index")?.visible}
+          <td
+            class="py-2.5 px-3 text-center font-mono font-bold text-[#8c8c8c] border-r border-[#25272b]/20"
+          >
             {index + 1}
           </td>
         {/if}
 
         <!-- Host Emulator -->
-        {#if columns.find(c => c.key === "hostEmulator")?.visible}
-          <td class="py-2.5 px-3 font-sans text-xs text-[#8c8c8c] border-r border-[#25272b]/30">
+        {#if columns.find((c) => c.key === "hostEmulator")?.visible}
+          <td
+            class="py-2.5 px-3 text-xs text-[#8c8c8c] border-r border-[#25272b]/20"
+          >
             {#if item.emuIndex >= 0}
-              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-[#18191c] text-[#00b578] font-mono text-[11px]">
+              <span
+                class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-[#18191c] text-[#00b578] font-mono text-[11px]"
+              >
                 #{item.emuIndex}
               </span>
             {:else}
@@ -93,43 +99,55 @@ function handleImport() {
         {/if}
 
         <!-- UID -->
-        {#if columns.find(c => c.key === "uid")?.visible}
-          <td class="py-2.5 px-3 font-mono font-bold text-white border-r border-[#25272b]/30">
+        {#if columns.find((c) => c.key === "uid")?.visible}
+          <td
+            class="py-2.5 px-3 font-mono font-bold text-white border-r border-[#25272b]/20"
+          >
             {item.uid}
           </td>
         {/if}
 
         <!-- Profile Name -->
-        {#if columns.find(c => c.key === "profileName")?.visible}
-          <td class="py-2.5 px-3 text-[#d9d9d9] font-sans text-xs border-r border-[#25272b]/30">
+        {#if columns.find((c) => c.key === "profileName")?.visible}
+          <td
+            class="py-2.5 px-3 text-[#d9d9d9] text-xs border-r border-[#25272b]/20"
+          >
             {item.username || "-"}
           </td>
         {/if}
 
         <!-- Password -->
-        {#if columns.find(c => c.key === "password")?.visible}
-          <td class="py-2.5 px-3 font-mono text-xs text-[#8c8c8c] border-r border-[#25272b]/30">
+        {#if columns.find((c) => c.key === "password")?.visible}
+          <td
+            class="py-2.5 px-3 font-mono text-xs text-[#8c8c8c] border-r border-[#25272b]/20"
+          >
             ••••••••
           </td>
         {/if}
 
         <!-- 2FA -->
-        {#if columns.find(c => c.key === "twoFA")?.visible}
-          <td class="py-2.5 px-3 font-mono text-xs text-[#8c8c8c] border-r border-[#25272b]/30">
+        {#if columns.find((c) => c.key === "twoFA")?.visible}
+          <td
+            class="py-2.5 px-3 font-mono text-xs text-[#8c8c8c] border-r border-[#25272b]/20"
+          >
             {item.twoFA ? "••••••••" : "-"}
           </td>
         {/if}
 
         <!-- Proxy -->
-        {#if columns.find(c => c.key === "proxy")?.visible}
-          <td class="py-2.5 px-3 font-mono text-xs text-[#8c8c8c] border-r border-[#25272b]/30">
+        {#if columns.find((c) => c.key === "proxy")?.visible}
+          <td
+            class="py-2.5 px-3 font-mono text-xs text-[#8c8c8c] border-r border-[#25272b]/20"
+          >
             {item.proxy || "Direct"}
           </td>
         {/if}
 
         <!-- Status -->
-        {#if columns.find(c => c.key === "status")?.visible}
-          <td class="py-2.5 px-3 text-center border-r border-[#25272b]/30">
+        {#if columns.find((c) => c.key === "status")?.visible}
+          <td
+            class="py-2.5 px-3 text-center border-r border-[#25272b]/20"
+          >
             <span
               class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#1877f2]/10 text-[#1877f2] border border-[#1877f2]/20"
             >
@@ -139,12 +157,15 @@ function handleImport() {
         {/if}
 
         <!-- Actions -->
-        {#if columns.find(c => c.key === "actions")?.visible}
+        {#if columns.find((c) => c.key === "actions")?.visible}
+          <!-- svelte-ignore a11y_click_events_have_key_events -->
+          <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
           <td
-            class="py-2.5 px-3 text-right sticky right-0 z-10 shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.3)] {isSelected
-              ? 'bg-[#121c18]'
+            class="py-2.5 px-3 text-right sticky right-0 z-10 shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.25)] group-hover:z-30 focus-within:z-30 {isSelected
+              ? 'bg-[color-mix(in_srgb,#00b578_12%,#141517)] group-hover:bg-[color-mix(in_srgb,#00b578_12%,#1f2125)]'
               : 'bg-[#141517] group-hover:bg-[#1f2125]'}"
             onclick={(e) => e.stopPropagation()}
+            onmousedown={(e) => e.stopPropagation()}
           >
             <button
               type="button"
@@ -168,7 +189,7 @@ function handleImport() {
   subtitle="Format: UID|Password|2FA|Cookie (one account per line)"
   icon="users"
 >
-  <div class="space-y-3">
+  <div class="space-y-3 font-sans">
     <textarea
       rows="6"
       placeholder="1000847291029|MyPassword123|JBSWY3DPEHPK3PXP|sb=123..."
