@@ -1,6 +1,5 @@
 <script lang="ts">
 import { emulatorsStore } from "$lib/stores/emulators.svelte";
-import { themeStore } from "$lib/stores/theme.svelte";
 import type { ActiveTab } from "$lib/types";
 import Icon from "../ui/Icon.svelte";
 
@@ -77,7 +76,7 @@ $effect(() => {
     {/each}
   </div>
 
-  <!-- Right: Real-time Telemetry Pill & Quick Controls -->
+  <!-- Right: Real-time Telemetry Pill -->
   <div class="flex items-center gap-2">
     <!-- Live Running Metrics Pill -->
     <div
@@ -92,15 +91,5 @@ $effect(() => {
         {emulatorsStore.runningCount * 2048} MB RAM
       </span>
     </div>
-
-    <!-- Theme Mode Toggle -->
-    <button
-      type="button"
-      title="Toggle Light/Dark Theme ({themeStore.current})"
-      onclick={() => themeStore.toggle()}
-      class="p-2 rounded-xl text-text-muted hover:text-[#ffc107] hover:bg-bg-card border border-border-default transition-colors cursor-pointer"
-    >
-      <Icon name={themeStore.current === "dark" ? "sun" : "moon"} size={14} />
-    </button>
   </div>
 </div>
