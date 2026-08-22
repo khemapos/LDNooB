@@ -6,8 +6,8 @@ pub async fn run_adb_command(
     index: i32,
     adb_command: String,
 ) -> Result<String, String> {
-    let mut args = vec!["adb", "--index", &index.to_string(), "--command"];
-    args.push(&adb_command);
+    let index_str = index.to_string();
+    let args = vec!["adb", "--index", &index_str, "--command", &adb_command];
     run_ldconsole_cmd(&ldplayer_dir, &args).await
 }
 
@@ -17,8 +17,8 @@ pub async fn start_app(
     index: i32,
     package_name: String,
 ) -> Result<(), String> {
-    let mut args = vec!["runapp", "--index", &index.to_string(), "--packagename"];
-    args.push(&package_name);
+    let index_str = index.to_string();
+    let args = vec!["runapp", "--index", &index_str, "--packagename", &package_name];
     run_ldconsole_cmd(&ldplayer_dir, &args).await?;
     Ok(())
 }

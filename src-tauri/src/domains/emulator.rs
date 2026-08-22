@@ -187,7 +187,8 @@ pub async fn modify_emulator(
     cpu: Option<i32>,
     memory: Option<i32>,
 ) -> Result<(), String> {
-    let mut args = vec!["modify", "--index", &index.to_string()];
+    let index_str = index.to_string();
+    let mut args = vec!["modify", "--index", &index_str];
     let cpu_str = cpu.map(|c| c.to_string());
     let mem_str = memory.map(|m| m.to_string());
 
