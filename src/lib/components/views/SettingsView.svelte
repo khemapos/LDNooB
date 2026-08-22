@@ -5,6 +5,13 @@ import { settingsStore } from "$lib/stores/settings.svelte";
 import CustomButton from "../common/CustomButton.svelte";
 import Icon from "../ui/Icon.svelte";
 
+interface Props {
+  isModal?: boolean;
+  onSaved?: () => void;
+}
+
+let { isModal = false, onSaved }: Props = $props();
+
 let emulatorEngine = $state(
   (typeof localStorage !== "undefined" && localStorage.getItem("settings_emulator_engine")) ||
     "ldplayer"
@@ -151,6 +158,7 @@ async function handleSave() {
 
   isSaved = true;
   logsStore.success("Settings", "Saved application preferences to local configuration");
+  onSaved?.();
   setTimeout(() => (isSaved = false), 2000);
 }
 </script>
