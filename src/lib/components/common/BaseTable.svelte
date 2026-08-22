@@ -59,6 +59,10 @@ let {
 // Column Selector Dropdown State
 let showColumnSelector = $state(false);
 let columnSelectorRef = $state<HTMLDivElement | null>(null);
+let defaultColumnsBackup: ColumnConfig[] = [];
+
+// Column Drag & Drop Reorder State
+let draggedColIndex = $state<number | null>(null);
 
 // Column Widths Map
 let columnWidths = $state<Record<string, number>>({});
@@ -69,6 +73,30 @@ let isPageSizeOpen = $state(false);
 let jumpPageInput = $state("");
 
 onMount(() => {
+  // Save default snapshot
+  defaultColumnsBackup = JSON.parse(JSON.stringify(columns));
+
+  // Try load saved column config from localStorage
+  const savedConfig = localStorage.getItem(`table_columns_config_${itemLabel}`);
+  if (savedConfig) {
+    try {
+      const parsed = JSON.parse(savedConfig);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        const merged = parsed.map((p: any) => {
+          const match = columns.find((c) => c.key === p.key);
+          return match ? { ...match, visible: p.visible } : p;
+        });
+        // Add any new columns that were missing
+        columns.forEach((c) => {
+          if (!merged.some((m: any) => m.key === c.key)) {
+            merged.push(c);
+          }
+        });
+        columns = merged;
+      }
+    } catch {}
+  }
+
   // Initialize default column widths
   columns.forEach((col) => {
     if (col.visible === undefined) {
@@ -88,6 +116,69 @@ onMount(() => {
   window.addEventListener("click", handleOutsideClick);
   return () => window.removeEventListener("click", handleOutsideClick);
 });
+
+function saveColumnConfig() {
+  if (typeof localStorage !== "undefined") {
+    localStorage.setItem(`table_columns_config_${itemLabel}`, JSON.stringify(columns));
+  }
+}
+
+// Column Customization Helper Actions
+function resetColumns() {
+  if (defaultColumnsBackup.length > 0) {
+    columns = JSON.parse(JSON.stringify(defaultColumnsBackup));
+    saveColumnConfig();
+  }
+}
+
+function showAllColumns() {
+  columns = columns.map((col) => ({ ...col, visible: true }));
+  saveColumnConfig();
+}
+
+function hideEmptyColumns() {
+  columns = columns.map((col) => {
+    if (!col.canHide) return col;
+    // Check if all items are empty for this column
+    const hasAnyValue = items.some((item) => {
+      const val = item[col.key];
+      return val !== undefined && val !== null && val !== "" && val !== "-" && val !== "Unassigned";
+    });
+    return { ...col, visible: hasAnyValue };
+  });
+  saveColumnConfig();
+}
+
+function toggleColumnVisibility(key: string) {
+  columns = columns.map((col) => {
+    if (col.key === key && col.canHide) {
+      return { ...col, visible: !col.visible };
+    }
+    return col;
+  });
+  saveColumnConfig();
+}
+
+// Column Drag-and-Drop Reorder Logic
+function handleDragStart(index: number) {
+  draggedColIndex = index;
+}
+
+function handleDragOver(e: DragEvent, targetIndex: number) {
+  e.preventDefault();
+  if (draggedColIndex === null || draggedColIndex === targetIndex) return;
+
+  const updated = [...columns];
+  const [moved] = updated.splice(draggedColIndex, 1);
+  updated.splice(targetIndex, 0, moved);
+  columns = updated;
+  draggedColIndex = targetIndex;
+  saveColumnConfig();
+}
+
+function handleDragEnd() {
+  draggedColIndex = null;
+}
 
 // Visible Columns
 let visibleColumns = $derived(columns.filter((c) => c.visible));
@@ -121,14 +212,6 @@ function getPageNumbers(curr: number, total: number): (number | string)[] {
   return [1, "...", curr - 1, curr, curr + 1, "...", total];
 }
 
-let pageNumbers = $derived(getPageNumbers(currentPage, totalPages));
-
-function goToPage(page: number) {
-  if (page >= 1 && page <= totalPages && page !== currentPage) {
-    currentPage = page;
-  }
-}
-
 function prevPage() {
   if (currentPage > 1) {
     currentPage -= 1;
@@ -157,7 +240,7 @@ function changePageSize(size: number) {
   isPageSizeOpen = false;
 }
 
-// Selection Computes & Multi-Select Engine
+// Selection Computes & Multi-Select Engine (100% Parity with D:\ldremote)
 let isAllPageSelected = $derived(
   paginatedItems.length > 0 && paginatedItems.every((item) => selectedKeys.includes(item[itemKey]))
 );
@@ -186,6 +269,7 @@ function toggleSelectAll() {
 }
 
 function toggleSelect(key: any) {
+  if (key === undefined || key === null) return;
   if (selectedKeys.includes(key)) {
     selectedKeys = selectedKeys.filter((k) => k !== key);
   } else {
@@ -197,7 +281,7 @@ function toggleSelect(key: any) {
 function handleRowClick(e: MouseEvent, item: any, index: number) {
   onRowClick?.(item, e);
 
-  // Avoid triggering row click if clicking on an interactive element (button, input, select, link)
+  // Avoid triggering row click if clicking on an interactive element
   const target = e.target as HTMLElement | null;
   if (
     target &&
@@ -231,7 +315,7 @@ function handleRowClick(e: MouseEvent, item: any, index: number) {
     toggleSelect(itemKeyVal);
     lastClickedIndex = index;
   } else {
-    toggleSelect(itemKeyVal);
+    selectedKeys = [itemKeyVal];
     lastClickedIndex = index;
   }
   onUpdateSelectedKeys?.(selectedKeys);
@@ -301,15 +385,6 @@ function handleResizeEnd() {
   window.removeEventListener("mousemove", handleResizeMove);
   window.removeEventListener("mouseup", handleResizeEnd);
 }
-
-function toggleColumnVisibility(key: string) {
-  columns = columns.map((col) => {
-    if (col.key === key && col.canHide) {
-      return { ...col, visible: !col.visible };
-    }
-    return col;
-  });
-}
 </script>
 
 <div
@@ -352,44 +427,124 @@ function toggleColumnVisibility(key: string) {
             >
               {#if col.key === "actions"}
                 <!-- Actions Column with Custom View Columns Menu -->
-                <div class="flex items-center justify-end gap-1 relative" bind:this={columnSelectorRef}>
-                  <span>{col.label}</span>
+                <div class="flex items-center justify-end gap-1.5 relative pr-1" bind:this={columnSelectorRef}>
+                  <span class="truncate">{col.label}</span>
                   <button
                     type="button"
-                    title="Customize Visible Columns"
+                    title="Custom Columns"
                     onclick={(e) => {
                       e.stopPropagation();
                       showColumnSelector = !showColumnSelector;
                     }}
-                    class="p-1 rounded-md text-text-muted hover:text-text-hover hover:bg-bg-card-hover transition-colors cursor-pointer"
+                    class="p-1 rounded-lg text-text-muted hover:text-text-hover hover:bg-bg-card-hover transition-colors cursor-pointer {showColumnSelector
+                      ? 'text-text-hover bg-bg-card-hover'
+                      : ''}"
                   >
-                    <Icon name="filter" size={12} />
+                    <svg
+                      class="w-3.5 h-3.5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      stroke-width="2.2"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M9 17V7m3 10V7m3 10V7M6 21h12a2 2 0 002-2V5a2 2 0 00-2-2H6a2 2 0 00-2 2v14a2 2 0 002 2z"
+                      />
+                    </svg>
                   </button>
 
-                  <!-- Column Visibility Selector Dropdown -->
+                  <!-- Column Visibility Selector Dropdown Popover (100% Fidelity with D:\ldremote) -->
                   {#if showColumnSelector}
                     <div
-                      class="absolute right-0 top-full mt-1.5 w-48 p-2 bg-bg-card border border-border-default rounded-xl shadow-xl z-50 flex flex-col gap-1 text-left text-text-default normal-case font-normal animate-in fade-in zoom-in-95 duration-100"
+                      role="menu"
+                      tabindex="-1"
+                      class="absolute right-0 top-full mt-1.5 w-52 bg-bg-panel border border-border-default rounded-xl shadow-2xl z-50 flex flex-col text-left text-text-default normal-case font-normal animate-in fade-in zoom-in-95 duration-100 overflow-hidden"
+                      onclick={(e) => e.stopPropagation()}
+                      onkeydown={(e) => e.stopPropagation()}
                     >
-                      <span class="text-[10px] font-extrabold uppercase tracking-widest text-text-muted px-2 py-1">
-                        Display Columns
-                      </span>
-                      {#each columns as c}
-                        <label
-                          class="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-bg-card-hover cursor-pointer text-xs {c.canHide
-                            ? 'text-text-default'
-                            : 'opacity-50 cursor-not-allowed'}"
+                      <!-- Top Quick Action Bar -->
+                      <div
+                        class="flex items-center justify-between gap-1 p-2 border-b border-border-default/60 text-[10px] font-bold text-text-muted bg-bg-card/40 select-none"
+                      >
+                        <button
+                          type="button"
+                          onclick={resetColumns}
+                          class="hover:text-[#00b578] cursor-pointer transition-colors px-1 py-0.5 bg-transparent border-none"
                         >
-                          <input
-                            type="checkbox"
-                            checked={c.visible}
-                            disabled={!c.canHide}
-                            onchange={() => toggleColumnVisibility(c.key)}
-                            class="{checkboxClassName} cursor-pointer"
-                          />
-                          <span class="font-medium text-xs truncate">{c.label}</span>
-                        </label>
-                      {/each}
+                          Reset
+                        </button>
+                        <span class="text-border-default">|</span>
+                        <button
+                          type="button"
+                          onclick={hideEmptyColumns}
+                          class="hover:text-[#00b578] cursor-pointer transition-colors px-1 py-0.5 bg-transparent border-none"
+                        >
+                          Hide Empty
+                        </button>
+                        <span class="text-border-default">|</span>
+                        <button
+                          type="button"
+                          onclick={showAllColumns}
+                          class="hover:text-[#00b578] cursor-pointer transition-colors px-1 py-0.5 bg-transparent border-none"
+                        >
+                          Show All
+                        </button>
+                      </div>
+
+                      <!-- Scrollable Columns Checklist with Drag Handle -->
+                      <div
+                        class="p-1.5 max-h-64 overflow-y-auto space-y-0.5 custom-scrollbar"
+                      >
+                        {#each columns as c, colIndex}
+                          {#if c.key !== "actions"}
+                            <!-- svelte-ignore a11y_no_static_element_interactions -->
+                            <div
+                              draggable={c.canHide}
+                              ondragstart={() => handleDragStart(colIndex)}
+                              ondragover={(e) => handleDragOver(e, colIndex)}
+                              ondragend={handleDragEnd}
+                              class="flex items-center justify-between px-2 py-1.5 rounded-lg select-none text-[11px] font-semibold transition-all duration-100 hover:bg-bg-card-hover {draggedColIndex ===
+                              colIndex
+                                ? 'opacity-30 bg-[#00b578]/10 border-dashed border-[#00b578]'
+                                : ''}"
+                            >
+                              <label
+                                class="flex items-center gap-2 flex-1 min-w-0 {c.canHide
+                                  ? 'cursor-pointer'
+                                  : 'opacity-40 cursor-not-allowed'}"
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={c.visible}
+                                  disabled={!c.canHide}
+                                  onchange={() => toggleColumnVisibility(c.key)}
+                                  class="{checkboxClassName} cursor-pointer shrink-0"
+                                />
+                                <span class="truncate">{c.label}</span>
+                              </label>
+
+                              {#if c.canHide}
+                                <div
+                                  class="cursor-grab active:cursor-grabbing text-text-muted hover:text-[#00b578] p-0.5 shrink-0 transition-colors"
+                                  title="Drag to reorder"
+                                >
+                                  <svg
+                                    class="w-3.5 h-3.5"
+                                    fill="currentColor"
+                                    viewBox="0 0 20 20"
+                                  >
+                                    <path
+                                      d="M7 6a1 1 0 100-2 1 1 0 000 2zM7 9a1 1 0 100-2 1 1 0 000 2zM7 12a1 1 0 100-2 1 1 0 000 2zM7 15a1 1 0 100-2 1 1 0 000 2zM13 6a1 1 0 100-2 1 1 0 000 2zM13 9a1 1 0 100-2 1 1 0 000 2zM13 12a1 1 0 100-2 1 1 0 000 2zM13 15a1 1 0 100-2 1 1 0 000 2z"
+                                    />
+                                  </svg>
+                                </div>
+                              {/if}
+                            </div>
+                          {/if}
+                        {/each}
+                      </div>
                     </div>
                   {/if}
                 </div>
@@ -456,7 +611,9 @@ function toggleColumnVisibility(key: string) {
                 onmousedown={(e) => e.stopPropagation()}
               >
                 {#if isSelected}
-                  <div class="absolute left-0 top-0 bottom-0 w-[3.5px] bg-[#00b578] pointer-events-none z-30"></div>
+                  <div
+                    class="absolute left-0 top-0 bottom-0 w-[3.5px] bg-[#00b578] pointer-events-none z-30"
+                  ></div>
                 {/if}
                 <div class="flex items-center justify-center py-2.5 w-full h-full">
                   <input
@@ -489,7 +646,8 @@ function toggleColumnVisibility(key: string) {
                           : 'bg-bg-panel group-hover:bg-bg-card-hover'
                       }`
                     : ''}"
-                  style="width: {width}; min-width: {width}; max-width: {width}; text-align: {col.align || (col.key === 'actions' ? 'right' : 'left')};"
+                  style="width: {width}; min-width: {width}; max-width: {width}; text-align: {col.align ||
+                    (col.key === 'actions' ? 'right' : 'left')};"
                 >
                   {#if renderCell}
                     {@render renderCell(col.key, item, index, col)}
@@ -505,190 +663,165 @@ function toggleColumnVisibility(key: string) {
     </table>
   </div>
 
-  <!-- Pagination Footer (100% Parity with D:\ldremote) -->
-  {#if paginate && isConnected}
-    <footer
-      class="shrink-0 flex flex-col lg:flex-row items-center justify-between border-t border-border-default px-5 py-3 select-none z-10 relative bg-bg-panel gap-3 font-sans"
+  <!-- Pagination Bottom Bar (100% Parity with D:\ldremote) -->
+  {#if paginate}
+    <div
+      class="h-11 border-t border-border-default flex items-center justify-between px-4 text-[11px] select-none shrink-0 bg-bg-panel/95 backdrop-blur-md"
     >
-      <!-- Left: Counter Details Badge -->
-      <div
-        class="flex items-center select-none w-full lg:w-auto justify-center lg:justify-start"
-      >
-        <div
-          class="h-9 px-4 rounded-xl border border-border-default bg-bg-card text-xs text-text-muted font-medium flex items-center gap-2 shadow-xs"
-        >
-          <span class="relative flex h-2 w-2 mr-0.5">
-            <span
-              class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00b578]/30 opacity-75"
-            ></span>
-            <span
-              class="relative inline-flex rounded-full h-2 w-2 bg-[#00b578]"
-            ></span>
-          </span>
-          <span>Showing</span>
-          <span class="font-semibold text-text-hover font-mono text-[12.5px]">
-            {showingStart}-{showingEnd}
-          </span>
-          <span>of</span>
-          <span class="font-semibold text-[#00b578] font-mono text-[12.5px]">
-            {totalItems}
-          </span>
-          <span>{itemLabel}</span>
-        </div>
+      <!-- Left: Showing Counter with Animated Emerald Dot -->
+      <div class="flex items-center gap-2 text-text-muted font-medium">
+        <span class="flex h-1.5 w-1.5 relative">
+          <span
+            class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00b578] opacity-75"
+          ></span>
+          <span
+            class="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#00b578]"
+          ></span>
+        </span>
+        <span>
+          Showing <span class="font-bold text-text-default">{showingStart}</span>
+          -
+          <span class="font-bold text-text-default">{showingEnd}</span>
+          of
+          <span class="font-bold text-[#00b578]">{totalItems}</span>
+          {itemLabel}
+        </span>
       </div>
 
-      <!-- Center: Optional Center Slot -->
-      {#if renderFooterCenter}
-        <div class="w-full lg:w-auto flex justify-center lg:absolute lg:left-1/2 lg:top-1/2 lg:-translate-x-1/2 lg:-translate-y-1/2 my-1 lg:my-0">
+      <!-- Center: Custom slot -->
+      <div class="flex items-center gap-2">
+        {#if renderFooterCenter}
           {@render renderFooterCenter()}
-        </div>
-      {/if}
+        {/if}
+      </div>
 
-      <!-- Right: Page Size, Quick Jump, and Navigation Controls -->
-      <div
-        class="flex flex-wrap items-center justify-center lg:justify-end gap-3 w-full lg:w-auto"
-      >
-        <!-- Custom Page Size Dropdown -->
-        <div class="relative h-9 flex items-center">
+      <!-- Right: Page Size Popover, Jump Box, & Compact Page Navigation -->
+      <div class="flex items-center gap-3">
+        <!-- Upward Page Size Selector Dropdown -->
+        <div class="relative">
           <button
             type="button"
-            onclick={() => (isPageSizeOpen = !isPageSizeOpen)}
-            class="h-9 border border-border-default hover:border-border-hover text-xs font-bold rounded-xl px-3.5 flex items-center gap-2 transition-all duration-150 cursor-pointer shadow-xs active:scale-95 bg-bg-card hover:bg-bg-card-hover text-text-muted hover:text-text-hover"
+            onclick={(e) => {
+              e.stopPropagation();
+              isPageSizeOpen = !isPageSizeOpen;
+            }}
+            class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-border-default bg-bg-card hover:bg-bg-card-hover text-text-default text-[11px] font-bold transition-all cursor-pointer shadow-xs active:scale-95"
           >
             <span>{pageSize} / page</span>
-            <span class="transition-transform duration-200 {isPageSizeOpen ? 'rotate-180' : ''}">
-              <Icon name="chevronDown" size={12} />
-            </span>
+            <Icon
+              name="chevronDown"
+              size={12}
+              class="text-text-muted transition-transform {isPageSizeOpen
+                ? 'rotate-180'
+                : ''}"
+            />
           </button>
 
+          <!-- Upward Popover Menu -->
           {#if isPageSizeOpen}
-            <!-- svelte-ignore a11y_click_events_have_key_events -->
-            <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
             <div
-              class="fixed inset-0 z-30"
-              role="presentation"
-              onclick={() => (isPageSizeOpen = false)}
-            ></div>
-            <div
-              class="absolute bottom-full mb-1 left-0 z-40 w-28 rounded-xl border border-border-default p-1 shadow-lg flex flex-col gap-0.5 bg-bg-card text-text-default font-sans"
+              class="absolute bottom-full mb-1.5 right-0 w-28 bg-bg-panel border border-border-default rounded-xl shadow-xl z-50 p-1 flex flex-col gap-0.5 text-left font-bold animate-in fade-in slide-in-from-bottom-1 duration-100"
             >
               {#each pageSizes as size}
                 <button
                   type="button"
                   onclick={() => changePageSize(size)}
-                  class="px-3 py-1.5 text-left text-xs font-bold rounded-lg transition-colors cursor-pointer w-full {pageSize === size
-                    ? 'bg-[#00b578] text-white'
-                    : 'hover:bg-bg-card-hover text-text-muted hover:text-text-hover'}"
+                  class="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-[11px] transition-colors cursor-pointer {pageSize ===
+                  size
+                    ? 'bg-[#00b578]/15 text-[#00b578]'
+                    : 'text-text-muted hover:text-text-default hover:bg-bg-card-hover'}"
                 >
-                  {size} / page
+                  <span>{size} / page</span>
+                  {#if pageSize === size}
+                    <Icon name="check" size={12} class="text-[#00b578]" />
+                  {/if}
                 </button>
               {/each}
             </div>
           {/if}
         </div>
 
-        <!-- Quick Jump Box -->
-        <div class="flex items-center gap-2">
-          <span class="text-xs text-text-muted font-medium">Go to:</span>
-          <div
-            class="relative flex items-center bg-bg-card border border-border-default hover:border-border-hover focus-within:border-[#00b578] focus-within:ring-2 focus-within:ring-[#00b578]/15 rounded-xl overflow-hidden transition-all duration-150 w-16 h-9 shadow-xs"
-          >
+        <!-- Quick Jump Input Box -->
+        <div
+          class="flex items-center gap-1.5 px-2 py-0.5 rounded-lg border border-border-default bg-bg-card/40 shadow-xs"
+        >
+          <span class="text-[10.5px] font-medium text-text-muted">Go to:</span>
+          <div class="flex items-center gap-0.5">
             <input
-              type="number"
-              min="1"
-              max={totalPages}
+              type="text"
               bind:value={jumpPageInput}
               onkeydown={handleJumpPage}
-              onblur={() => {
-                if (jumpPageInput) {
-                  const pageVal = Number.parseInt(jumpPageInput, 10);
-                  if (pageVal >= 1 && pageVal <= totalPages) {
-                    currentPage = pageVal;
-                  }
-                  jumpPageInput = "";
-                }
-              }}
-              placeholder={String(currentPage)}
-              class="w-full h-full text-center bg-transparent border-none focus:outline-none text-xs font-mono font-bold text-text-default placeholder:text-text-muted pr-5 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              placeholder={currentPage.toString()}
+              class="w-7 h-5 text-center text-[11px] font-mono font-bold bg-transparent text-text-default border-none outline-none p-0"
             />
-            <!-- Custom mini spin buttons -->
-            <div class="absolute right-1 flex flex-col h-full justify-center z-10">
+            <div class="flex flex-col -space-y-0.5">
               <button
                 type="button"
-                aria-label="Next Page"
-                onclick={() => (currentPage = Math.min(currentPage + 1, totalPages))}
-                class="p-0.5 hover:text-[#00b578] text-text-muted transition-colors cursor-pointer flex items-center justify-center bg-transparent border-none"
-                title="Next Page"
+                onclick={() => {
+                  if (currentPage < totalPages) currentPage += 1;
+                }}
+                class="text-text-muted hover:text-text-hover leading-none px-0.5 cursor-pointer border-none bg-transparent"
               >
-                <Icon name="chevronUp" size={10} />
+                ▲
               </button>
               <button
                 type="button"
-                aria-label="Previous Page"
-                onclick={() => (currentPage = Math.max(currentPage - 1, 1))}
-                class="p-0.5 hover:text-[#00b578] text-text-muted transition-colors cursor-pointer flex items-center justify-center bg-transparent border-none"
-                title="Previous Page"
+                onclick={() => {
+                  if (currentPage > 1) currentPage -= 1;
+                }}
+                class="text-text-muted hover:text-text-hover leading-none px-0.5 cursor-pointer border-none bg-transparent"
               >
-                <Icon name="chevronDown" size={10} />
+                ▼
               </button>
             </div>
           </div>
         </div>
 
-        <!-- Navigation Controls Container -->
-        <div
-          class="h-9 flex items-center gap-1 p-1 rounded-xl border border-border-default bg-bg-app"
-        >
-          <!-- Prev Button -->
+        <!-- Page Numbers Bar (< 1 2 3 ... N >) -->
+        <div class="flex items-center gap-1">
+          <!-- Previous Button -->
           <button
             type="button"
-            aria-label="Previous Page"
-            disabled={currentPage === 1}
             onclick={prevPage}
-            class="h-7 w-7 rounded-lg hover:scale-105 active:scale-95 transition-all duration-150 cursor-pointer flex items-center justify-center disabled:cursor-not-allowed disabled:transform-none disabled:opacity-20 border border-border-default hover:border-border-hover bg-bg-card hover:bg-bg-card-hover text-text-muted hover:text-text-hover"
+            disabled={currentPage <= 1}
+            class="w-6.5 h-6.5 rounded-lg flex items-center justify-center border border-border-default bg-bg-card hover:bg-bg-card-hover text-text-muted hover:text-text-hover disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer shadow-xs active:scale-95"
             title="Previous Page"
           >
-            <Icon name="chevronLeft" size={13} />
+            <Icon name="chevronLeft" size={12} />
           </button>
 
-          <!-- Page Numbers -->
-          <div class="flex items-center gap-1">
-            {#each pageNumbers as page, idx}
-              {#if page === "..."}
-                <span
-                  class="text-text-muted font-bold px-2 select-none font-mono text-xs"
-                >
-                  ...
-                </span>
-              {:else}
-                {@const pageNum = Number(page)}
-                <button
-                  type="button"
-                  onclick={() => goToPage(pageNum)}
-                  class="h-7 min-w-7 px-2 text-xs font-bold rounded-lg font-mono transition-all duration-150 hover:scale-105 active:scale-95 cursor-pointer flex items-center justify-center border {currentPage ===
-                  pageNum
-                    ? 'bg-[#00b578] hover:bg-[#00c985] text-white border-transparent shadow-md shadow-[#00b578]/20'
-                    : 'bg-bg-card border-border-default hover:border-border-hover text-text-muted hover:text-text-hover hover:bg-bg-card-hover'}"
-                >
-                  {page}
-                </button>
-              {/if}
-            {/each}
-          </div>
+          <!-- Numbered Page Buttons -->
+          {#each getPageNumbers(currentPage, totalPages) as pageNum}
+            {#if pageNum === "..."}
+              <span class="w-5 text-center text-text-muted font-bold text-xs select-none">
+                ...
+              </span>
+            {:else}
+              <button
+                type="button"
+                onclick={() => (currentPage = pageNum as number)}
+                class="w-6.5 h-6.5 rounded-lg text-[11px] font-mono font-bold flex items-center justify-center transition-all cursor-pointer shadow-xs {currentPage ===
+                pageNum
+                  ? 'bg-[#00b578] text-white shadow-md shadow-[#00b578]/20 border border-[#00b578]'
+                  : 'border border-border-default bg-bg-card hover:bg-bg-card-hover text-text-muted hover:text-text-hover active:scale-95'}"
+              >
+                {pageNum}
+              </button>
+            {/if}
+          {/each}
 
           <!-- Next Button -->
           <button
             type="button"
-            aria-label="Next Page"
-            disabled={currentPage === totalPages}
             onclick={nextPage}
-            class="h-7 w-7 rounded-lg hover:scale-105 active:scale-95 transition-all duration-150 cursor-pointer flex items-center justify-center disabled:cursor-not-allowed disabled:transform-none disabled:opacity-20 border border-border-default hover:border-border-hover bg-bg-card hover:bg-bg-card-hover text-text-muted hover:text-text-hover"
+            disabled={currentPage >= totalPages}
+            class="w-6.5 h-6.5 rounded-lg flex items-center justify-center border border-border-default bg-bg-card hover:bg-bg-card-hover text-text-muted hover:text-text-hover disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer shadow-xs active:scale-95"
             title="Next Page"
           >
-            <Icon name="chevronRight" size={13} />
+            <Icon name="chevronRight" size={12} />
           </button>
         </div>
       </div>
-    </footer>
+    </div>
   {/if}
 </div>
