@@ -264,7 +264,7 @@ function hideEmptyColumns() {
         >
           <!-- Checkbox Header (Sticky Left) -->
           <th
-            class="p-0 w-[40px] min-w-[40px] max-w-[40px] sticky left-0 z-50 bg-bg-card border-r border-border-default/45"
+            class="p-0 w-[40px] min-w-[40px] max-w-[40px] sticky left-0 z-50 bg-bg-card border-r border-border-default/20"
           >
             <div class="flex items-center justify-center py-2.5 w-full h-full">
               <input
@@ -281,11 +281,11 @@ function hideEmptyColumns() {
           {#each visibleColumns as col (col.key)}
             {@const width = (columnWidths[col.key] || col.width || 120) + "px"}
             <th
-              class="py-2.5 px-3 border-r border-border-default/45 relative select-none bg-bg-card text-[10.5px] font-extrabold {col.key ===
+              class="py-2.5 px-3 border-r border-border-default/20 relative select-none bg-bg-card text-[10.5px] font-extrabold {col.key ===
               'index'
                 ? 'text-center font-mono'
                 : ''} {col.key === 'actions'
-                ? 'sticky right-0 z-50 shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.25)]'
+                ? 'sticky right-0 z-50'
                 : ''}"
               style="width: {width}; min-width: {width}; max-width: {width};"
             >
@@ -431,9 +431,9 @@ function hideEmptyColumns() {
             {@const isSelected = selectedKeys.includes(item[itemKey])}
             <tr
               id="table-row-{rowKey}"
-              class="group h-10 border-b transition-all duration-150 ease-out {isSelected
-                ? 'bg-[#00b578]/12 text-text-hover border-[#00b578]/25 shadow-[inset_3px_0_0_0_#00b578]'
-                : 'hover:bg-bg-card-hover text-text-default border-border-default/20'}"
+              class="group h-10 border-0 transition-all duration-150 ease-out {isSelected
+                ? 'bg-[#00b578]/12 text-text-hover shadow-[inset_3px_0_0_0_#00b578]'
+                : 'hover:bg-bg-card-hover text-text-default'}"
               onclick={(e) => handleRowClickInternal(e, item, index)}
               onmousedown={(e) => handleRowMouseDownInternal(e, item, index)}
               onmouseenter={(e) => handleRowMouseEnterInternal(e, item, index)}
@@ -446,9 +446,9 @@ function hideEmptyColumns() {
               <!-- svelte-ignore a11y_click_events_have_key_events -->
               <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
               <td
-                class="p-0 w-[40px] min-w-[40px] max-w-[40px] sticky left-0 z-30 transition-colors duration-150 border-r {isSelected
-                  ? 'bg-[color-mix(in_srgb,#00b578_12%,var(--color-bg-panel))] group-hover:bg-[color-mix(in_srgb,#00b578_12%,var(--color-bg-card-hover))] border-border-default/20'
-                  : 'bg-bg-panel group-hover:bg-bg-card-hover border-border-default/20'}"
+                class="p-0 w-[40px] min-w-[40px] max-w-[40px] sticky left-0 z-30 transition-colors duration-150 border-r border-b border-border-default/20 {isSelected
+                  ? 'bg-[color-mix(in_srgb,#00b578_12%,var(--color-bg-panel))] group-hover:bg-[color-mix(in_srgb,#00b578_12%,var(--color-bg-card-hover))]'
+                  : 'bg-bg-panel group-hover:bg-bg-card-hover'}"
                 onclick={(e) => e.stopPropagation()}
                 onmousedown={(e) => e.stopPropagation()}
               >
@@ -469,18 +469,18 @@ function hideEmptyColumns() {
                 {@const width =
                   (columnWidths[col.key] || col.width || 120) + "px"}
                 <td
-                  class="py-2.5 px-3 border-r transition-colors duration-150 {col.key ===
+                  class="py-2.5 px-3 border-r border-b border-border-default/20 transition-colors duration-150 {col.key ===
                   'index'
                     ? 'text-center font-mono'
                     : ''} {col.key === 'name'
                     ? 'font-bold text-text-hover'
                     : ''} {col.key === 'actions'
-                    ? `sticky right-0 z-30 shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.25)] group-hover:z-30 focus-within:z-30 ${
+                    ? `sticky right-0 z-30 ${
                         isSelected
-                          ? 'bg-[color-mix(in_srgb,#00b578_12%,var(--color-bg-panel))] group-hover:bg-[color-mix(in_srgb,#00b578_12%,var(--color-bg-card-hover))] border-border-default/20'
-                          : 'bg-bg-panel group-hover:bg-bg-card-hover border-border-default/20'
+                          ? 'bg-[color-mix(in_srgb,#00b578_12%,var(--color-bg-panel))] group-hover:bg-[color-mix(in_srgb,#00b578_12%,var(--color-bg-card-hover))]'
+                          : 'bg-bg-panel group-hover:bg-bg-card-hover'
                       }`
-                    : 'border-border-default/20'}"
+                    : ''}"
                   style="width: {width}; min-width: {width}; max-width: {width};"
                 >
                   {#if renderCell}
