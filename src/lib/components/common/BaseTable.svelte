@@ -20,6 +20,7 @@ interface Props {
   paginate?: boolean;
   pageSize?: number;
   pageSizes?: number[];
+  itemLabel?: string;
   isConnected?: boolean;
   checkboxClassName?: string;
   onUpdateSelectedKeys?: (keys: any[]) => void;
@@ -38,9 +39,10 @@ let {
   items = [],
   selectedKeys = $bindable([]),
   itemKey = "index",
-  paginate = false,
+  paginate = true,
   pageSize = $bindable(50),
-  pageSizes = [50, 100, 200, 300],
+  pageSizes = [10, 20, 50, 100, 200],
+  itemLabel = "instances",
   isConnected = true,
   checkboxClassName = "custom-checkbox",
   onUpdateSelectedKeys,
@@ -63,6 +65,8 @@ let columnWidths = $state<Record<string, number>>({});
 
 // Pagination State
 let currentPage = $state(1);
+let isPageSizeOpen = $state(false);
+let jumpPageInput = $state("");
 
 onMount(() => {
   // Initialize default column widths
@@ -91,27 +95,93 @@ let visibleColumns = $derived(columns.filter((c) => c.visible));
 // Pagination Computes
 let totalItems = $derived(items.length);
 let totalPages = $derived(Math.max(1, Math.ceil(totalItems / pageSize)));
-let startIndex = $derived((currentPage - 1) * pageSize);
-let endIndex = $derived(Math.min(startIndex + pageSize, totalItems));
-let paginatedItems = $derived(paginate ? items.slice(startIndex, endIndex) : items);
+let showingStart = $derived(totalItems === 0 ? 0 : (currentPage - 1) * pageSize + 1);
+let showingEnd = $derived(Math.min(currentPage * pageSize, totalItems));
+let paginatedItems = $derived(
+  paginate ? items.slice((currentPage - 1) * pageSize, currentPage * pageSize) : items
+);
+
+// Reset currentPage if items change and currentPage is out of bounds
+$effect(() => {
+  if (currentPage > totalPages && totalPages > 0) {
+    currentPage = totalPages;
+  }
+});
+
+function getPageNumbers(curr: number, total: number): (number | string)[] {
+  if (total <= 7) {
+    return Array.from({ length: total }, (_, i) => i + 1);
+  }
+  if (curr <= 3) {
+    return [1, 2, 3, 4, "...", total];
+  }
+  if (curr >= total - 2) {
+    return [1, "...", total - 3, total - 2, total - 1, total];
+  }
+  return [1, "...", curr - 1, curr, curr + 1, "...", total];
+}
+
+let pageNumbers = $derived(getPageNumbers(currentPage, totalPages));
+
+function goToPage(page: number) {
+  if (page >= 1 && page <= totalPages && page !== currentPage) {
+    currentPage = page;
+  }
+}
+
+function prevPage() {
+  if (currentPage > 1) {
+    currentPage -= 1;
+  }
+}
+
+function nextPage() {
+  if (currentPage < totalPages) {
+    currentPage += 1;
+  }
+}
+
+function handleJumpPage(e: KeyboardEvent) {
+  if (e.key === "Enter") {
+    const pageVal = Number.parseInt(jumpPageInput, 10);
+    if (!Number.isNaN(pageVal) && pageVal >= 1 && pageVal <= totalPages) {
+      currentPage = pageVal;
+    }
+    jumpPageInput = "";
+  }
+}
+
+function changePageSize(size: number) {
+  pageSize = size;
+  currentPage = 1;
+  isPageSizeOpen = false;
+}
 
 // Selection Computes
 let isAllPageSelected = $derived(
   paginatedItems.length > 0 && paginatedItems.every((item) => selectedKeys.includes(item[itemKey]))
 );
 
-function toggleSelectAllPage() {
-  const pageKeys = paginatedItems.map((item) => item[itemKey]);
+let isSomePageSelected = $derived(
+  paginatedItems.some((item) => selectedKeys.includes(item[itemKey])) && !isAllPageSelected
+);
+
+function toggleSelectAll() {
   if (isAllPageSelected) {
-    selectedKeys = selectedKeys.filter((k) => !pageKeys.includes(k));
+    const pageItemKeys = paginatedItems.map((i) => i[itemKey]);
+    selectedKeys = selectedKeys.filter((k) => !pageItemKeys.includes(k));
   } else {
-    selectedKeys = Array.from(new Set([...selectedKeys, ...pageKeys]));
+    const newKeys = [...selectedKeys];
+    paginatedItems.forEach((i) => {
+      const k = i[itemKey];
+      if (!newKeys.includes(k)) newKeys.push(k);
+    });
+    selectedKeys = newKeys;
   }
   onUpdateSelectedKeys?.(selectedKeys);
 }
 
 function toggleSelect(key: any) {
-  if (!key && key !== 0) return;
   if (selectedKeys.includes(key)) {
     selectedKeys = selectedKeys.filter((k) => k !== key);
   } else {
@@ -120,333 +190,183 @@ function toggleSelect(key: any) {
   onUpdateSelectedKeys?.(selectedKeys);
 }
 
-// -------------------------------------------------------------
-// Drag-to-select and Click Select Logic
-// -------------------------------------------------------------
-let isDragging = $state(false);
-let dragAnchorIndex = $state<number | null>(null);
-let lastClickedIndex = $state<number | null>(null);
-
-function handleRowMouseDownInternal(event: MouseEvent, item: any, index: number) {
-  onRowMouseDown?.(item, event);
-
-  if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey) {
-    return;
-  }
-
-  const itemKeyVal = item[itemKey];
-  isDragging = true;
-  dragAnchorIndex = index;
-  lastClickedIndex = index;
-
-  selectedKeys = [itemKeyVal];
-  onUpdateSelectedKeys?.([itemKeyVal]);
-
-  function handleDragEnd() {
-    setTimeout(() => {
-      isDragging = false;
-      dragAnchorIndex = null;
-    }, 50);
-    window.removeEventListener("mouseup", handleDragEnd);
-  }
-
-  window.addEventListener("mouseup", handleDragEnd);
-  event.preventDefault();
-}
-
-function handleRowMouseEnterInternal(event: MouseEvent, item: any, index: number) {
-  onRowMouseEnter?.(item, event);
-
-  if (!isDragging || dragAnchorIndex === null) return;
-
-  const start = Math.min(dragAnchorIndex, index);
-  const end = Math.max(dragAnchorIndex, index);
-  const rangeKeys = paginatedItems.slice(start, end + 1).map((p) => p[itemKey]);
-
-  selectedKeys = rangeKeys;
-  onUpdateSelectedKeys?.(rangeKeys);
-}
-
-function handleRowClickInternal(event: MouseEvent, item: any, index: number) {
-  onRowClick?.(item, event);
-
-  if (isDragging) return;
-
-  const itemKeyVal = item[itemKey];
-  const isMeta = event.ctrlKey || event.metaKey;
-  const isShift = event.shiftKey;
-
-  if (isShift && lastClickedIndex !== null) {
-    event.preventDefault();
-    const start = Math.min(lastClickedIndex, index);
-    const end = Math.max(lastClickedIndex, index);
-    const rangeKeys = paginatedItems.slice(start, end + 1).map((p) => p[itemKey]);
-
-    if (isMeta) {
-      selectedKeys = Array.from(new Set([...selectedKeys, ...rangeKeys]));
-    } else {
-      selectedKeys = rangeKeys;
-    }
-    onUpdateSelectedKeys?.(selectedKeys);
-  } else if (isMeta) {
-    toggleSelect(itemKeyVal);
-  } else {
-    selectedKeys = [itemKeyVal];
-    onUpdateSelectedKeys?.([itemKeyVal]);
-  }
-
-  lastClickedIndex = index;
-}
-
-// -------------------------------------------------------------
 // Column Resizing Logic
-// -------------------------------------------------------------
-let isResizing = false;
+let resizingColumnKey = $state<string | null>(null);
 let startX = 0;
 let startWidth = 0;
-let activeResizeCol = "";
 
-function startResize(event: MouseEvent, colKey: string) {
-  isResizing = true;
-  startX = event.clientX;
-  startWidth = columnWidths[colKey] || 100;
-  activeResizeCol = colKey;
+function handleResizeStart(e: MouseEvent, key: string) {
+  e.preventDefault();
+  e.stopPropagation();
+  resizingColumnKey = key;
+  startX = e.clientX;
+  startWidth = columnWidths[key] || columns.find((c) => c.key === key)?.width || 120;
 
-  document.body.style.userSelect = "none";
-  window.addEventListener("mousemove", handleResize);
-  window.addEventListener("mouseup", stopResize, { once: true });
-  event.preventDefault();
+  window.addEventListener("mousemove", handleResizeMove);
+  window.addEventListener("mouseup", handleResizeEnd);
 }
 
-function handleResize(event: MouseEvent) {
-  if (!isResizing || !activeResizeCol) return;
-  const dx = event.clientX - startX;
-  columnWidths[activeResizeCol] = Math.max(50, startWidth + dx);
+function handleResizeMove(e: MouseEvent) {
+  if (!resizingColumnKey) return;
+  const diff = e.clientX - startX;
+  const newWidth = Math.max(50, startWidth + diff);
+  columnWidths[resizingColumnKey] = newWidth;
 }
 
-function stopResize() {
-  isResizing = false;
-  activeResizeCol = "";
-  document.body.style.userSelect = "";
-  window.removeEventListener("mousemove", handleResize);
+function handleResizeEnd() {
+  resizingColumnKey = null;
+  window.removeEventListener("mousemove", handleResizeMove);
+  window.removeEventListener("mouseup", handleResizeEnd);
 }
 
-// Column Visibility Controls
-function resetColumns() {
-  columns = columns.map((c) => ({ ...c, visible: true }));
-}
-
-function showAllColumns() {
-  columns = columns.map((c) => ({ ...c, visible: true }));
-}
-
-function hideEmptyColumns() {
-  columns = columns.map((c) => {
-    if (!c.canHide) return c;
-    const hasValue = items.some(
-      (item) => item[c.key] !== undefined && item[c.key] !== null && item[c.key] !== ""
-    );
-    return { ...c, visible: hasValue };
+function toggleColumnVisibility(key: string) {
+  columns = columns.map((col) => {
+    if (col.key === key && col.canHide) {
+      return { ...col, visible: !col.visible };
+    }
+    return col;
   });
 }
 </script>
 
-<div class="flex-1 flex flex-col min-h-0 overflow-hidden border border-border-default rounded-2xl bg-bg-panel shadow-xs font-sans">
-  <!-- Scrollable Table Container -->
-  <div class="overflow-x-auto overflow-y-auto flex-1 min-h-[280px]">
-    <table
-      class="w-full border-collapse text-left text-[11px] text-text-default table-fixed"
-    >
-      <!-- Table Header (matching D:\ldremote) -->
-      <thead>
-        <tr
-          class="bg-bg-card border-b border-border-default text-text-muted font-bold uppercase tracking-wider select-none sticky top-0 z-40 shadow-xs"
-        >
-          <!-- Checkbox Header (Sticky Left) -->
+<div
+  class="relative flex flex-col flex-1 h-full w-full bg-bg-panel border border-border-default rounded-2xl shadow-xs overflow-hidden font-sans text-xs select-none"
+>
+  <!-- Table Container (Scrollable) -->
+  <div class="flex-1 overflow-auto relative custom-scrollbar">
+    <table class="w-full border-collapse border-spacing-0 table-fixed text-left select-none">
+      <!-- Fixed Table Header -->
+      <thead class="sticky top-0 z-30 bg-bg-header/95 backdrop-blur-md shadow-xs border-b border-border-default/40">
+        <tr class="h-10 text-[11px] font-extrabold uppercase tracking-wider text-text-muted select-none">
+          <!-- Checkbox Column Header -->
           <th
-            class="p-0 w-[40px] min-w-[40px] max-w-[40px] sticky left-0 z-50 bg-bg-card border-r border-border-default/20"
+            class="sticky left-0 z-40 bg-bg-header/95 backdrop-blur-md w-10 min-w-10 max-w-10 px-3 text-center border-r border-border-default/20"
           >
-            <div class="flex items-center justify-center py-2.5 w-full h-full">
+            <div class="flex items-center justify-center">
               <input
                 type="checkbox"
                 checked={isAllPageSelected}
-                onchange={toggleSelectAllPage}
-                disabled={!isConnected}
+                indeterminate={isSomePageSelected}
+                onchange={toggleSelectAll}
                 class="{checkboxClassName} cursor-pointer"
+                title="Select all on current page"
               />
             </div>
           </th>
 
-          <!-- Dynamic Column Headers -->
-          {#each visibleColumns as col (col.key)}
+          <!-- Dynamic Columns Header -->
+          {#each visibleColumns as col}
             {@const width = (columnWidths[col.key] || col.width || 120) + "px"}
             <th
-              class="py-2.5 px-3 border-r border-border-default/20 relative select-none bg-bg-card text-[10.5px] font-extrabold {col.key ===
+              class="relative px-3 py-2 border-r border-border-default/20 select-none group font-extrabold text-text-muted {col.key ===
               'index'
                 ? 'text-center font-mono'
                 : ''} {col.key === 'actions'
-                ? 'sticky right-0 z-50'
+                ? 'sticky right-0 z-40 bg-bg-header/95 backdrop-blur-md text-right'
                 : ''}"
-              style="width: {width}; min-width: {width}; max-width: {width};"
+              style="width: {width}; min-width: {width}; max-width: {width}; text-align: {col.align ||
+                (col.key === 'actions' ? 'right' : 'left')};"
             >
               {#if col.key === "actions"}
-                <div
-                  bind:this={columnSelectorRef}
-                  class="flex items-center justify-between gap-1.5 w-full h-full relative"
-                >
-                  <span class="flex-1 text-center">{col.label}</span>
+                <!-- Actions Column with Custom View Columns Menu -->
+                <div class="flex items-center justify-end gap-1 relative" bind:this={columnSelectorRef}>
+                  <span>{col.label}</span>
                   <button
                     type="button"
+                    title="Customize Visible Columns"
                     onclick={(e) => {
                       e.stopPropagation();
                       showColumnSelector = !showColumnSelector;
                     }}
-                    class="p-1 hover:bg-bg-card-hover text-text-muted hover:text-text-hover rounded cursor-pointer transition-colors flex items-center justify-center shrink-0 {showColumnSelector
-                      ? 'text-text-hover bg-bg-card-hover'
-                      : ''}"
-                    title="Custom Columns"
+                    class="p-1 rounded-md text-text-muted hover:text-text-hover hover:bg-bg-card-hover transition-colors cursor-pointer"
                   >
-                    <svg
-                      class="w-3.5 h-3.5"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      stroke-width="2.2"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M9 17V7m3 10V7m3 10V7M6 21h12a2 2 0 002-2V5a2 2 0 00-2-2H6a2 2 0 00-2 2v14a2 2 0 002 2z"
-                      />
-                    </svg>
+                    <Icon name="filter" size={12} />
                   </button>
 
-                  <!-- Custom Columns Dropdown Popover -->
+                  <!-- Column Visibility Selector Dropdown -->
                   {#if showColumnSelector}
-                    <!-- svelte-ignore a11y_click_events_have_key_events -->
-                    <!-- svelte-ignore a11y_no_static_element_interactions -->
                     <div
-                      class="absolute right-0 top-full mt-2 w-56 rounded-xl border border-border-default bg-bg-card shadow-2xl z-50 text-left normal-case tracking-normal p-2.5 font-sans"
-                      onclick={(e) => e.stopPropagation()}
+                      class="absolute right-0 top-full mt-1.5 w-48 p-2 bg-bg-card border border-border-default rounded-xl shadow-xl z-50 flex flex-col gap-1 text-left text-text-default normal-case font-normal animate-in fade-in zoom-in-95 duration-100"
                     >
-                      <div
-                        class="flex items-center justify-between gap-1 pb-2 mb-2 border-b border-border-default text-[10px] text-text-muted font-bold"
-                      >
-                        <button
-                          type="button"
-                          onclick={resetColumns}
-                          class="hover:text-[#00b578] cursor-pointer transition-colors px-1 py-0.5"
+                      <span class="text-[10px] font-extrabold uppercase tracking-widest text-text-muted px-2 py-1">
+                        Display Columns
+                      </span>
+                      {#each columns as c}
+                        <label
+                          class="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-bg-card-hover cursor-pointer text-xs {c.canHide
+                            ? 'text-text-default'
+                            : 'opacity-50 cursor-not-allowed'}"
                         >
-                          Reset
-                        </button>
-                        <span class="text-border-default">|</span>
-                        <button
-                          type="button"
-                          onclick={hideEmptyColumns}
-                          class="hover:text-[#00b578] cursor-pointer transition-colors px-1 py-0.5"
-                        >
-                          Hide Empty
-                        </button>
-                        <span class="text-border-default">|</span>
-                        <button
-                          type="button"
-                          onclick={showAllColumns}
-                          class="hover:text-[#00b578] cursor-pointer transition-colors px-1 py-0.5"
-                        >
-                          Show All
-                        </button>
-                      </div>
-
-                      <div class="py-1 max-h-56 overflow-y-auto space-y-1 pr-1">
-                        {#each columns as c}
-                          {#if c.key !== "actions"}
-                            <label
-                              class="flex items-center justify-between px-2 py-1 rounded-lg hover:bg-bg-card-hover text-text-default text-[11px] font-medium cursor-pointer {c.canHide
-                                ? ''
-                                : 'opacity-40 cursor-not-allowed'}"
-                            >
-                              <span>{c.label}</span>
-                              <input
-                                type="checkbox"
-                                bind:checked={c.visible}
-                                disabled={!c.canHide}
-                                class="custom-checkbox"
-                              />
-                            </label>
-                          {/if}
-                        {/each}
-                      </div>
+                          <input
+                            type="checkbox"
+                            checked={c.visible}
+                            disabled={!c.canHide}
+                            onchange={() => toggleColumnVisibility(c.key)}
+                            class="{checkboxClassName} cursor-pointer"
+                          />
+                          <span class="font-medium text-xs truncate">{c.label}</span>
+                        </label>
+                      {/each}
                     </div>
                   {/if}
                 </div>
               {:else if renderHeader}
                 {@render renderHeader(col.key, col)}
               {:else}
-                <span>{col.label}</span>
+                <span class="truncate block">{col.label}</span>
               {/if}
 
               <!-- Column Resizer Handle -->
-              <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-              <div
-                role="separator"
-                tabindex="-1"
-                aria-orientation="vertical"
-                class="absolute top-0 right-0 h-full w-1.5 cursor-col-resize hover:bg-[#00b578]/40 active:bg-[#00b578] transition-colors z-20"
-                onmousedown={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault();
-                  startResize(e, col.key);
-                }}
-              ></div>
+              {#if col.key !== "actions"}
+                <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+                <div
+                  role="separator"
+                  aria-orientation="vertical"
+                  tabindex="-1"
+                  class="absolute top-0 right-0 w-1.5 h-full cursor-col-resize hover:bg-[#00b578] transition-colors z-20"
+                  onmousedown={(e) => handleResizeStart(e, col.key)}
+                ></div>
+              {/if}
             </th>
           {/each}
         </tr>
       </thead>
 
-      <!-- Table Body (matching D:\ldremote) -->
-      <tbody>
+      <!-- Table Body Rows -->
+      <tbody class="divide-y divide-border-default/20 text-xs font-normal">
         {#if paginatedItems.length === 0}
-          {#if renderEmptyState}
-            {@render renderEmptyState()}
-          {:else}
-            <tr class="text-center">
-              <td
-                colspan={visibleColumns.length + 1}
-                class="py-16 text-text-muted"
-              >
-                <div
-                  class="flex flex-col items-center justify-center gap-2 max-w-sm mx-auto font-sans"
-                >
-                  <Icon name="cube" size={28} class="opacity-40" />
-                  <p class="font-bold text-xs text-text-default">
-                    No items found.
-                  </p>
+          <tr>
+            <td
+              colspan={visibleColumns.length + 1}
+              class="py-16 text-center text-text-muted"
+            >
+              {#if renderEmptyState}
+                {@render renderEmptyState()}
+              {:else}
+                <div class="flex flex-col items-center justify-center gap-2">
+                  <span class="text-text-muted/40">
+                    <Icon name="cube" size={32} />
+                  </span>
+                  <span class="font-medium">No items found</span>
                 </div>
-              </td>
-            </tr>
-          {/if}
+              {/if}
+            </td>
+          </tr>
         {:else}
           {#each paginatedItems as item, index (item[itemKey] ?? index)}
-            {@const rowKey = item[itemKey] ?? index}
             {@const isSelected = selectedKeys.includes(item[itemKey])}
             <tr
-              id="table-row-{rowKey}"
-              class="group h-10 border-0 transition-all duration-150 ease-out {isSelected
-                ? 'bg-[#00b578]/12 text-text-hover'
-                : 'hover:bg-bg-card-hover text-text-default'}"
-              onclick={(e) => handleRowClickInternal(e, item, index)}
-              onmousedown={(e) => handleRowMouseDownInternal(e, item, index)}
-              onmouseenter={(e) => handleRowMouseEnterInternal(e, item, index)}
-              oncontextmenu={(e) => {
-                e.preventDefault();
-                onRowContextMenu?.(item, e);
-              }}
+              class="h-10 transition-colors duration-150 group cursor-default {isSelected
+                ? 'bg-[color-mix(in_srgb,#00b578_12%,var(--color-bg-panel))] hover:bg-[color-mix(in_srgb,#00b578_16%,var(--color-bg-panel))]'
+                : 'hover:bg-bg-card-hover/40'}"
+              onclick={(e) => onRowClick?.(item, e)}
+              onmousedown={(e) => onRowMouseDown?.(item, e)}
+              onmouseenter={(e) => onRowMouseEnter?.(item, e)}
+              oncontextmenu={(e) => onRowContextMenu?.(item, e)}
             >
-              <!-- Checkbox Cell (Sticky Left) -->
-              <!-- svelte-ignore a11y_click_events_have_key_events -->
-              <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+              <!-- Checkbox Cell with Selection Indicator -->
               <td
-                class="p-0 w-[40px] min-w-[40px] max-w-[40px] sticky left-0 z-20 transition-colors duration-150 relative border-r {isSelected
+                class="sticky left-0 z-20 w-10 min-w-10 max-w-10 px-3 text-center transition-colors duration-150 relative border-r {isSelected
                   ? 'bg-[color-mix(in_srgb,#00b578_12%,var(--color-bg-panel))] group-hover:bg-[color-mix(in_srgb,#00b578_12%,var(--color-bg-card-hover))] border-b border-[#00b578]/20 border-r-border-default/20'
                   : 'bg-bg-panel group-hover:bg-bg-card-hover border-b border-border-default/20 border-r-border-default/20'}"
                 onclick={(e) => e.stopPropagation()}
@@ -486,7 +406,7 @@ function hideEmptyColumns() {
                           : 'bg-bg-panel group-hover:bg-bg-card-hover'
                       }`
                     : ''}"
-                  style="width: {width}; min-width: {width}; max-width: {width};"
+                  style="width: {width}; min-width: {width}; max-width: {width}; text-align: {col.align || (col.key === 'actions' ? 'right' : 'left')};"
                 >
                   {#if renderCell}
                     {@render renderCell(col.key, item, index, col)}
@@ -502,17 +422,17 @@ function hideEmptyColumns() {
     </table>
   </div>
 
-  <!-- Pagination Footer (matching D:\ldremote) -->
-  {#if paginate && isConnected && totalItems > 0}
+  <!-- Pagination Footer (100% Parity with D:\ldremote) -->
+  {#if paginate && isConnected}
     <footer
-      class="shrink-0 flex flex-col lg:flex-row items-center justify-between border-t border-border-default px-4 py-2.5 select-none z-10 relative bg-bg-panel gap-3 font-sans text-xs"
+      class="shrink-0 flex flex-col lg:flex-row items-center justify-between border-t border-border-default px-5 py-3 select-none z-10 relative bg-bg-panel gap-3 font-sans"
     >
-      <!-- Left: Counter Pill -->
+      <!-- Left: Counter Details Badge -->
       <div
         class="flex items-center select-none w-full lg:w-auto justify-center lg:justify-start"
       >
         <div
-          class="h-8 px-3 rounded-xl border border-border-default bg-bg-card text-xs text-text-muted font-medium flex items-center gap-2 shadow-xs"
+          class="h-9 px-4 rounded-xl border border-border-default bg-bg-card text-xs text-text-muted font-medium flex items-center gap-2 shadow-xs"
         >
           <span class="relative flex h-2 w-2 mr-0.5">
             <span
@@ -523,50 +443,166 @@ function hideEmptyColumns() {
             ></span>
           </span>
           <span>Showing</span>
-          <span class="font-bold text-text-hover font-mono">{startIndex + 1}</span>
-          <span>to</span>
-          <span class="font-bold text-text-hover font-mono">{endIndex}</span>
+          <span class="font-semibold text-text-hover font-mono text-[12.5px]">
+            {showingStart}-{showingEnd}
+          </span>
           <span>of</span>
-          <span class="font-bold text-text-hover font-mono">{totalItems}</span>
-          <span>items</span>
+          <span class="font-semibold text-[#00b578] font-mono text-[12.5px]">
+            {totalItems}
+          </span>
+          <span>{itemLabel}</span>
         </div>
       </div>
 
-      <!-- Center: Optional Filters Snippet -->
+      <!-- Center: Optional Center Slot -->
       {#if renderFooterCenter}
-        {@render renderFooterCenter()}
+        <div class="w-full lg:w-auto flex justify-center lg:absolute lg:left-1/2 lg:top-1/2 lg:-translate-x-1/2 lg:-translate-y-1/2 my-1 lg:my-0">
+          {@render renderFooterCenter()}
+        </div>
       {/if}
 
-      <!-- Right: Page Size & Navigation Controls -->
-      <div class="flex items-center gap-3">
-        <select
-          bind:value={pageSize}
-          class="h-8 px-2.5 rounded-xl border border-border-default bg-bg-card text-xs text-text-hover font-mono focus:outline-none focus:border-[#00b578] cursor-pointer"
-        >
-          {#each pageSizes as size}
-            <option value={size}>{size} / page</option>
-          {/each}
-        </select>
-
-        <div class="flex items-center gap-1 font-mono text-xs">
+      <!-- Right: Page Size, Quick Jump, and Navigation Controls -->
+      <div
+        class="flex flex-wrap items-center justify-center lg:justify-end gap-3 w-full lg:w-auto"
+      >
+        <!-- Custom Page Size Dropdown -->
+        <div class="relative h-9 flex items-center">
           <button
             type="button"
-            disabled={currentPage <= 1}
-            onclick={() => (currentPage = Math.max(1, currentPage - 1))}
-            class="h-8 px-3 rounded-xl border border-border-default bg-bg-card text-text-default hover:text-text-hover hover:bg-bg-card-hover disabled:opacity-40 cursor-pointer"
+            onclick={() => (isPageSizeOpen = !isPageSizeOpen)}
+            class="h-9 border border-border-default hover:border-border-hover text-xs font-bold rounded-xl px-3.5 flex items-center gap-2 transition-all duration-150 cursor-pointer shadow-xs active:scale-95 bg-bg-card hover:bg-bg-card-hover text-text-muted hover:text-text-hover"
           >
-            Prev
+            <span>{pageSize} / page</span>
+            <span class="transition-transform duration-200 {isPageSizeOpen ? 'rotate-180' : ''}">
+              <Icon name="chevronDown" size={12} />
+            </span>
           </button>
-          <span class="px-2 text-text-hover font-semibold">
-            {currentPage} / {totalPages}
-          </span>
+
+          {#if isPageSizeOpen}
+            <!-- svelte-ignore a11y_click_events_have_key_events -->
+            <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+            <div
+              class="fixed inset-0 z-30"
+              role="presentation"
+              onclick={() => (isPageSizeOpen = false)}
+            ></div>
+            <div
+              class="absolute bottom-full mb-1 left-0 z-40 w-28 rounded-xl border border-border-default p-1 shadow-lg flex flex-col gap-0.5 bg-bg-card text-text-default font-sans"
+            >
+              {#each pageSizes as size}
+                <button
+                  type="button"
+                  onclick={() => changePageSize(size)}
+                  class="px-3 py-1.5 text-left text-xs font-bold rounded-lg transition-colors cursor-pointer w-full {pageSize === size
+                    ? 'bg-[#00b578] text-white'
+                    : 'hover:bg-bg-card-hover text-text-muted hover:text-text-hover'}"
+                >
+                  {size} / page
+                </button>
+              {/each}
+            </div>
+          {/if}
+        </div>
+
+        <!-- Quick Jump Box -->
+        <div class="flex items-center gap-2">
+          <span class="text-xs text-text-muted font-medium">Go to:</span>
+          <div
+            class="relative flex items-center bg-bg-card border border-border-default hover:border-border-hover focus-within:border-[#00b578] focus-within:ring-2 focus-within:ring-[#00b578]/15 rounded-xl overflow-hidden transition-all duration-150 w-16 h-9 shadow-xs"
+          >
+            <input
+              type="number"
+              min="1"
+              max={totalPages}
+              bind:value={jumpPageInput}
+              onkeydown={handleJumpPage}
+              onblur={() => {
+                if (jumpPageInput) {
+                  const pageVal = Number.parseInt(jumpPageInput, 10);
+                  if (pageVal >= 1 && pageVal <= totalPages) {
+                    currentPage = pageVal;
+                  }
+                  jumpPageInput = "";
+                }
+              }}
+              placeholder={String(currentPage)}
+              class="w-full h-full text-center bg-transparent border-none focus:outline-none text-xs font-mono font-bold text-text-default placeholder:text-text-muted pr-5 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            />
+            <!-- Custom mini spin buttons -->
+            <div class="absolute right-1 flex flex-col h-full justify-center z-10">
+              <button
+                type="button"
+                aria-label="Next Page"
+                onclick={() => (currentPage = Math.min(currentPage + 1, totalPages))}
+                class="p-0.5 hover:text-[#00b578] text-text-muted transition-colors cursor-pointer flex items-center justify-center bg-transparent border-none"
+                title="Next Page"
+              >
+                <Icon name="chevronUp" size={10} />
+              </button>
+              <button
+                type="button"
+                aria-label="Previous Page"
+                onclick={() => (currentPage = Math.max(currentPage - 1, 1))}
+                class="p-0.5 hover:text-[#00b578] text-text-muted transition-colors cursor-pointer flex items-center justify-center bg-transparent border-none"
+                title="Previous Page"
+              >
+                <Icon name="chevronDown" size={10} />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Navigation Controls Container -->
+        <div
+          class="h-9 flex items-center gap-1 p-1 rounded-xl border border-border-default bg-bg-app"
+        >
+          <!-- Prev Button -->
           <button
             type="button"
-            disabled={currentPage >= totalPages}
-            onclick={() => (currentPage = Math.min(totalPages, currentPage + 1))}
-            class="h-8 px-3 rounded-xl border border-border-default bg-bg-card text-text-default hover:text-text-hover hover:bg-bg-card-hover disabled:opacity-40 cursor-pointer"
+            aria-label="Previous Page"
+            disabled={currentPage === 1}
+            onclick={prevPage}
+            class="h-7 w-7 rounded-lg hover:scale-105 active:scale-95 transition-all duration-150 cursor-pointer flex items-center justify-center disabled:cursor-not-allowed disabled:transform-none disabled:opacity-20 border border-border-default hover:border-border-hover bg-bg-card hover:bg-bg-card-hover text-text-muted hover:text-text-hover"
+            title="Previous Page"
           >
-            Next
+            <Icon name="chevronLeft" size={13} />
+          </button>
+
+          <!-- Page Numbers -->
+          <div class="flex items-center gap-1">
+            {#each pageNumbers as page, idx}
+              {#if page === "..."}
+                <span
+                  class="text-text-muted font-bold px-2 select-none font-mono text-xs"
+                >
+                  ...
+                </span>
+              {:else}
+                {@const pageNum = Number(page)}
+                <button
+                  type="button"
+                  onclick={() => goToPage(pageNum)}
+                  class="h-7 min-w-7 px-2 text-xs font-bold rounded-lg font-mono transition-all duration-150 hover:scale-105 active:scale-95 cursor-pointer flex items-center justify-center border {currentPage ===
+                  pageNum
+                    ? 'bg-[#00b578] hover:bg-[#00c985] text-white border-transparent shadow-md shadow-[#00b578]/20'
+                    : 'bg-bg-card border-border-default hover:border-border-hover text-text-muted hover:text-text-hover hover:bg-bg-card-hover'}"
+                >
+                  {page}
+                </button>
+              {/if}
+            {/each}
+          </div>
+
+          <!-- Next Button -->
+          <button
+            type="button"
+            aria-label="Next Page"
+            disabled={currentPage === totalPages}
+            onclick={nextPage}
+            class="h-7 w-7 rounded-lg hover:scale-105 active:scale-95 transition-all duration-150 cursor-pointer flex items-center justify-center disabled:cursor-not-allowed disabled:transform-none disabled:opacity-20 border border-border-default hover:border-border-hover bg-bg-card hover:bg-bg-card-hover text-text-muted hover:text-text-hover"
+            title="Next Page"
+          >
+            <Icon name="chevronRight" size={13} />
           </button>
         </div>
       </div>
