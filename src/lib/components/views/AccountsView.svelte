@@ -71,111 +71,63 @@ function handleImport() {
       bind:selectedKeys={accountsStore.selectedUids}
       itemKey="uid"
     >
-      {#snippet rowSnippet(item: FacebookAccount, isSelected: boolean, index: number)}
-        <!-- Index -->
-        {#if columns.find((c) => c.key === "index")?.visible}
-          <td
-            class="py-2.5 px-3 text-center font-mono font-bold text-text-muted border-r border-border-default/20"
-          >
+      {#snippet renderCell(colKey: string, item: FacebookAccount, index: number)}
+        {#if colKey === "index"}
+          <span class="font-mono font-bold text-text-muted text-center block">
             {index + 1}
-          </td>
-        {/if}
-
-        <!-- Host Emulator -->
-        {#if columns.find((c) => c.key === "hostEmulator")?.visible}
-          <td
-            class="py-2.5 px-3 text-xs text-text-muted border-r border-border-default/20"
-          >
-            {#if item.emuIndex >= 0}
-              <span
-                class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-bg-card text-[#00b578] font-mono text-[11px] border border-border-default"
-              >
-                #{item.emuIndex}
-              </span>
-            {:else}
-              <span class="text-text-muted italic text-[11px]">Unassigned</span>
-            {/if}
-          </td>
-        {/if}
-
-        <!-- UID -->
-        {#if columns.find((c) => c.key === "uid")?.visible}
-          <td
-            class="py-2.5 px-3 font-mono font-bold text-text-hover border-r border-border-default/20"
-          >
+          </span>
+        {:else if colKey === "hostEmulator"}
+          {#if item.emuIndex >= 0}
+            <span
+              class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-bg-card text-[#00b578] font-mono text-[11px] border border-border-default"
+            >
+              #{item.emuIndex}
+            </span>
+          {:else}
+            <span class="text-text-muted italic text-[11px]">Unassigned</span>
+          {/if}
+        {:else if colKey === "uid"}
+          <span class="font-mono font-bold text-text-hover truncate block">
             {item.uid}
-          </td>
-        {/if}
-
-        <!-- Profile Name -->
-        {#if columns.find((c) => c.key === "profileName")?.visible}
-          <td
-            class="py-2.5 px-3 text-text-default text-xs border-r border-border-default/20"
-          >
+          </span>
+        {:else if colKey === "profileName"}
+          <span class="text-text-default text-xs truncate block">
             {item.username || "-"}
-          </td>
-        {/if}
-
-        <!-- Password -->
-        {#if columns.find((c) => c.key === "password")?.visible}
-          <td
-            class="py-2.5 px-3 font-mono text-xs text-text-muted border-r border-border-default/20"
-          >
+          </span>
+        {:else if colKey === "password"}
+          <span class="font-mono text-xs text-text-muted">
             ••••••••
-          </td>
-        {/if}
-
-        <!-- 2FA -->
-        {#if columns.find((c) => c.key === "twoFA")?.visible}
-          <td
-            class="py-2.5 px-3 font-mono text-xs text-text-muted border-r border-border-default/20"
-          >
+          </span>
+        {:else if colKey === "twoFA"}
+          <span class="font-mono text-xs text-text-muted">
             {item.twoFA ? "••••••••" : "-"}
-          </td>
-        {/if}
-
-        <!-- Proxy -->
-        {#if columns.find((c) => c.key === "proxy")?.visible}
-          <td
-            class="py-2.5 px-3 font-mono text-xs text-text-muted border-r border-border-default/20"
-          >
+          </span>
+        {:else if colKey === "proxy"}
+          <span class="font-mono text-xs text-text-muted truncate block">
             {item.proxy || "Direct"}
-          </td>
-        {/if}
-
-        <!-- Status -->
-        {#if columns.find((c) => c.key === "status")?.visible}
-          <td
-            class="py-2.5 px-3 text-center border-r border-border-default/20"
-          >
+          </span>
+        {:else if colKey === "status"}
+          <div class="flex items-center justify-center">
             <span
               class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#1877f2]/10 text-[#1877f2] border border-[#1877f2]/20"
             >
               {item.status}
             </span>
-          </td>
-        {/if}
-
-        <!-- Actions -->
-        {#if columns.find((c) => c.key === "actions")?.visible}
-          <!-- svelte-ignore a11y_click_events_have_key_events -->
-          <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-          <td
-            class="py-2 px-3 text-right sticky right-0 z-30 shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.25)] group-hover:z-30 focus-within:z-30 {isSelected
-              ? 'bg-[color-mix(in_srgb,#00b578_12%,var(--color-bg-panel))] group-hover:bg-[color-mix(in_srgb,#00b578_12%,var(--color-bg-card-hover))]'
-              : 'bg-bg-panel group-hover:bg-bg-card-hover'}"
-            onclick={(e) => e.stopPropagation()}
-            onmousedown={(e) => e.stopPropagation()}
-          >
+          </div>
+        {:else if colKey === "actions"}
+          <div class="flex items-center justify-end">
             <button
               type="button"
               title="Delete Account"
-              onclick={() => accountsStore.removeAccount(item.uid)}
+              onclick={(e) => {
+                e.stopPropagation();
+                accountsStore.removeAccount(item.uid);
+              }}
               class="p-1.5 rounded-lg text-text-muted hover:text-[#ff4d4f] hover:bg-[#ff4d4f]/10 transition-colors cursor-pointer"
             >
               <Icon name="trash" size={13} />
             </button>
-          </td>
+          </div>
         {/if}
       {/snippet}
     </BaseTable>

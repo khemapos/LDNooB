@@ -29,8 +29,8 @@ let columns = $state<ColumnConfig[]>([
   { key: "model", label: "Device Model", visible: true, canHide: true, width: 150 },
   { key: "proxy", label: "Proxy / IP", visible: true, canHide: true, width: 150 },
   { key: "metrics", label: "CPU / RAM", visible: true, canHide: true, width: 130 },
-  { key: "pid", label: "PID", visible: true, canHide: true, width: 80, align: "center" },
-  { key: "actions", label: "Actions", visible: true, canHide: false, width: 180, align: "right" },
+  { key: "pid", label: "PID", visible: true, canHide: true, width: 75, align: "center" },
+  { key: "actions", label: "Actions", visible: true, canHide: false, width: 175, align: "right" },
 ]);
 
 function promptDelete(index: number) {
@@ -189,37 +189,22 @@ function openModify(emu: Emulator) {
       bind:selectedKeys={emulatorsStore.selectedIndices}
       itemKey="index"
     >
-      {#snippet rowSnippet(item: Emulator, isSelected: boolean)}
-        <!-- No./ID -->
-        {#if columns.find((c) => c.key === "index")?.visible}
-          <td
-            class="py-2.5 px-3 text-center font-mono font-bold text-text-muted border-r border-border-default/20"
-          >
+      {#snippet renderCell(colKey: string, item: Emulator)}
+        {#if colKey === "index"}
+          <span class="font-mono font-bold text-text-muted">
             #{item.index}
-          </td>
-        {/if}
-
-        <!-- Name with Live Glow Indicator -->
-        {#if columns.find((c) => c.key === "name")?.visible}
-          <td
-            class="py-2.5 px-3 font-bold text-text-hover border-r border-border-default/20"
-          >
-            <div class="flex items-center gap-2">
-              <span
-                class="w-2 h-2 rounded-full shrink-0 {item.is_running
-                  ? 'bg-[#00b578] shadow-[0_0_8px_rgba(0,181,120,0.6)] animate-pulse'
-                  : 'bg-text-muted/40'}"
-              ></span>
-              <span class="truncate">{item.name}</span>
-            </div>
-          </td>
-        {/if}
-
-        <!-- Status Pill -->
-        {#if columns.find((c) => c.key === "status")?.visible}
-          <td
-            class="py-2.5 px-3 text-center border-r border-border-default/20"
-          >
+          </span>
+        {:else if colKey === "name"}
+          <div class="flex items-center gap-2 overflow-hidden">
+            <span
+              class="w-2 h-2 rounded-full shrink-0 {item.is_running
+                ? 'bg-[#00b578] shadow-[0_0_8px_rgba(0,181,120,0.6)] animate-pulse'
+                : 'bg-text-muted/40'}"
+            ></span>
+            <span class="truncate font-bold text-text-hover">{item.name}</span>
+          </div>
+        {:else if colKey === "status"}
+          <div class="flex items-center justify-center">
             {#if item.is_running}
               <span
                 class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#00b578]/10 text-[#00b578] border border-[#00b578]/25"
@@ -234,115 +219,92 @@ function openModify(emu: Emulator) {
                 Stopped
               </span>
             {/if}
-          </td>
-        {/if}
-
-        <!-- Resolution & DPI -->
-        {#if columns.find((c) => c.key === "resolution")?.visible}
-          <td
-            class="py-2.5 px-3 font-mono text-[11px] text-text-muted border-r border-border-default/20"
-          >
+          </div>
+        {:else if colKey === "resolution"}
+          <span class="font-mono text-[11px] text-text-muted">
             {item.width} × {item.height} ({item.dpi} DPI)
-          </td>
-        {/if}
-
-        <!-- Device Model -->
-        {#if columns.find((c) => c.key === "model")?.visible}
-          <td
-            class="py-2.5 px-3 text-text-default text-xs border-r border-border-default/20"
-          >
+          </span>
+        {:else if colKey === "model"}
+          <span class="text-text-default text-xs truncate">
             {item.brand ? `${item.brand} ` : ""}{item.model || "Samsung Galaxy S22"}
-          </td>
-        {/if}
-
-        <!-- Proxy -->
-        {#if columns.find((c) => c.key === "proxy")?.visible}
-          <td
-            class="py-2.5 px-3 font-mono text-[11px] text-text-muted border-r border-border-default/20"
-          >
+          </span>
+        {:else if colKey === "proxy"}
+          <span class="font-mono text-[11px] text-text-muted truncate">
             {item.proxy || "Direct (No Proxy)"}
-          </td>
-        {/if}
-
-        <!-- CPU / RAM -->
-        {#if columns.find((c) => c.key === "metrics")?.visible}
-          <td
-            class="py-2.5 px-3 font-mono text-[11px] text-text-muted border-r border-border-default/20"
-          >
+          </span>
+        {:else if colKey === "metrics"}
+          <span class="font-mono text-[11px] text-text-muted">
             2 Cores • 2048 MB
-          </td>
-        {/if}
-
-        <!-- PID -->
-        {#if columns.find((c) => c.key === "pid")?.visible}
-          <td
-            class="py-2.5 px-3 text-center font-mono text-text-muted border-r border-border-default/20"
-          >
+          </span>
+        {:else if colKey === "pid"}
+          <span class="font-mono text-text-muted block text-center">
             {item.pid > 0 ? item.pid : "-"}
-          </td>
-        {/if}
-
-        <!-- Action Buttons (Sticky Right) -->
-        {#if columns.find((c) => c.key === "actions")?.visible}
-          <!-- svelte-ignore a11y_click_events_have_key_events -->
-          <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-          <td
-            class="py-2 px-3 text-right sticky right-0 z-30 shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.25)] group-hover:z-30 focus-within:z-30 {isSelected
-              ? 'bg-[color-mix(in_srgb,#00b578_12%,var(--color-bg-panel))] group-hover:bg-[color-mix(in_srgb,#00b578_12%,var(--color-bg-card-hover))]'
-              : 'bg-bg-panel group-hover:bg-bg-card-hover'}"
-            onclick={(e) => e.stopPropagation()}
-            onmousedown={(e) => e.stopPropagation()}
-          >
-            <div class="flex items-center justify-end gap-1.5">
-              {#if item.is_running}
-                <button
-                  type="button"
-                  title="Open ADB Terminal"
-                  onclick={() => openAdb(item.index)}
-                  class="p-1.5 rounded-lg text-text-muted hover:text-[#00b578] hover:bg-bg-card transition-colors cursor-pointer"
-                >
-                  <Icon name="terminal" size={13} />
-                </button>
-                <button
-                  type="button"
-                  title="Stop Emulator Instance"
-                  onclick={() => emulatorsStore.quit(item.index)}
-                  class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-[#ff4d4f]/15 text-[#ff4d4f] border border-[#ff4d4f]/30 hover:bg-[#ff4d4f]/25 transition-all cursor-pointer active:scale-95"
-                >
-                  Stop
-                </button>
-              {:else}
-                <button
-                  type="button"
-                  title="Start Emulator Instance"
-                  onclick={() => emulatorsStore.launch(item.index)}
-                  class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-[#00b578]/15 text-[#00b578] border border-[#00b578]/30 hover:bg-[#00b578]/25 transition-all cursor-pointer active:scale-95"
-                >
-                  Start
-                </button>
-              {/if}
-
-              <!-- Modify Settings Gear -->
+          </span>
+        {:else if colKey === "actions"}
+          <div class="flex items-center justify-end gap-1.5">
+            {#if item.is_running}
               <button
                 type="button"
-                title="Modify Instance Settings"
-                onclick={() => openModify(item)}
-                class="p-1.5 rounded-lg text-text-muted hover:text-text-hover hover:bg-bg-card transition-colors cursor-pointer"
+                title="Open ADB Terminal"
+                onclick={(e) => {
+                  e.stopPropagation();
+                  openAdb(item.index);
+                }}
+                class="p-1.5 rounded-lg text-text-muted hover:text-[#00b578] hover:bg-bg-card transition-colors cursor-pointer"
               >
-                <Icon name="settings" size={13} />
+                <Icon name="terminal" size={13} />
               </button>
-
-              <!-- Delete -->
               <button
                 type="button"
-                title="Delete Instance"
-                onclick={() => promptDelete(item.index)}
-                class="p-1.5 rounded-lg text-text-muted hover:text-[#ff4d4f] hover:bg-[#ff4d4f]/10 transition-colors cursor-pointer"
+                title="Stop Emulator Instance"
+                onclick={(e) => {
+                  e.stopPropagation();
+                  emulatorsStore.quit(item.index);
+                }}
+                class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-[#ff4d4f]/15 text-[#ff4d4f] border border-[#ff4d4f]/30 hover:bg-[#ff4d4f]/25 transition-all cursor-pointer active:scale-95"
               >
-                <Icon name="trash" size={13} />
+                Stop
               </button>
-            </div>
-          </td>
+            {:else}
+              <button
+                type="button"
+                title="Start Emulator Instance"
+                onclick={(e) => {
+                  e.stopPropagation();
+                  emulatorsStore.launch(item.index);
+                }}
+                class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-[#00b578]/15 text-[#00b578] border border-[#00b578]/30 hover:bg-[#00b578]/25 transition-all cursor-pointer active:scale-95"
+              >
+                Start
+              </button>
+            {/if}
+
+            <!-- Modify Settings Gear -->
+            <button
+              type="button"
+              title="Modify Instance Settings"
+              onclick={(e) => {
+                e.stopPropagation();
+                openModify(item);
+              }}
+              class="p-1.5 rounded-lg text-text-muted hover:text-text-hover hover:bg-bg-card transition-colors cursor-pointer"
+            >
+              <Icon name="settings" size={13} />
+            </button>
+
+            <!-- Delete -->
+            <button
+              type="button"
+              title="Delete Instance"
+              onclick={(e) => {
+                e.stopPropagation();
+                promptDelete(item.index);
+              }}
+              class="p-1.5 rounded-lg text-text-muted hover:text-[#ff4d4f] hover:bg-[#ff4d4f]/10 transition-colors cursor-pointer"
+            >
+              <Icon name="trash" size={13} />
+            </button>
+          </div>
         {/if}
       {/snippet}
     </BaseTable>

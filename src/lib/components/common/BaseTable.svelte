@@ -1,4 +1,5 @@
 <script lang="ts">
+import type { Snippet } from "svelte";
 import { onMount } from "svelte";
 import Icon from "../ui/Icon.svelte";
 
@@ -26,10 +27,10 @@ interface Props {
   onRowMouseDown?: (item: any, event: MouseEvent) => void;
   onRowMouseEnter?: (item: any, event: MouseEvent) => void;
   onRowContextMenu?: (item: any, event: MouseEvent) => void;
-  renderCell?: any;
-  renderHeader?: any;
-  renderEmptyState?: any;
-  rowSnippet?: any;
+  renderCell?: Snippet<[string, any, number, ColumnConfig]>;
+  renderHeader?: Snippet<[string, ColumnConfig]>;
+  renderEmptyState?: Snippet<[]>;
+  renderFooterCenter?: Snippet<[]>;
 }
 
 let {
@@ -50,7 +51,7 @@ let {
   renderCell,
   renderHeader,
   renderEmptyState,
-  rowSnippet,
+  renderFooterCenter,
 }: Props = $props();
 
 // Column Selector Dropdown State
@@ -64,7 +65,7 @@ let columnWidths = $state<Record<string, number>>({});
 let currentPage = $state(1);
 
 onMount(() => {
-  // Reset columns visibility if any core column is missing
+  // Initialize default column widths
   columns.forEach((col) => {
     if (col.visible === undefined) {
       col.visible = true;
@@ -250,11 +251,11 @@ function hideEmptyColumns() {
 }
 </script>
 
-<div class="flex-1 flex flex-col min-h-0 overflow-hidden border border-border-default rounded-2xl bg-bg-panel shadow-xs">
+<div class="flex-1 flex flex-col min-h-0 overflow-hidden border border-border-default rounded-2xl bg-bg-panel shadow-xs font-sans">
   <!-- Scrollable Table Container -->
   <div class="overflow-x-auto overflow-y-auto flex-1 min-h-[280px]">
     <table
-      class="min-w-full w-max border-collapse text-left text-[11px] text-text-default font-sans"
+      class="w-full min-h-full border-collapse text-left text-[11px] text-text-default table-fixed"
     >
       <!-- Table Header (matching D:\ldremote) -->
       <thead>
@@ -263,7 +264,7 @@ function hideEmptyColumns() {
         >
           <!-- Checkbox Header (Sticky Left) -->
           <th
-            class="p-0 w-[42px] min-w-[42px] max-w-[42px] sticky left-0 z-50 bg-bg-card border-r border-border-default/45"
+            class="p-0 w-[40px] min-w-[40px] max-w-[40px] sticky left-0 z-50 bg-bg-card border-r border-border-default/45"
           >
             <div class="flex items-center justify-center py-2.5 w-full h-full">
               <input
@@ -282,7 +283,7 @@ function hideEmptyColumns() {
             <th
               class="py-2.5 px-3 border-r border-border-default/45 relative select-none bg-bg-card text-[10.5px] font-extrabold {col.key ===
               'index'
-                ? 'text-center'
+                ? 'text-center font-mono'
                 : ''} {col.key === 'actions'
                 ? 'sticky right-0 z-50 shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.25)]'
                 : ''}"
@@ -418,7 +419,7 @@ function hideEmptyColumns() {
                 >
                   <Icon name="cube" size={28} class="opacity-40" />
                   <p class="font-bold text-xs text-text-default">
-                    No emulator instances found.
+                    No items found.
                   </p>
                 </div>
               </td>
@@ -430,9 +431,9 @@ function hideEmptyColumns() {
             {@const isSelected = selectedKeys.includes(item[itemKey])}
             <tr
               id="table-row-{rowKey}"
-              class="group border-b border-border-default/20 transition-all duration-150 ease-out {isSelected
-                ? 'bg-[#00b578]/12 text-text-hover shadow-[inset_3px_0_0_0_#00b578]'
-                : 'hover:bg-bg-card-hover text-text-default'}"
+              class="group border-b transition-all duration-150 ease-out {isSelected
+                ? 'bg-[#00b578]/12 text-text-hover border-[#00b578]/25 shadow-[inset_3px_0_0_0_#00b578]'
+                : 'hover:bg-bg-card-hover text-text-default border-border-default/20'}"
               onclick={(e) => handleRowClickInternal(e, item, index)}
               onmousedown={(e) => handleRowMouseDownInternal(e, item, index)}
               onmouseenter={(e) => handleRowMouseEnterInternal(e, item, index)}
@@ -445,13 +446,13 @@ function hideEmptyColumns() {
               <!-- svelte-ignore a11y_click_events_have_key_events -->
               <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
               <td
-                class="p-0 w-[42px] min-w-[42px] max-w-[42px] sticky left-0 z-30 transition-colors duration-150 border-r border-border-default/20 {isSelected
-                  ? 'bg-[color-mix(in_srgb,#00b578_12%,var(--color-bg-panel))] group-hover:bg-[color-mix(in_srgb,#00b578_12%,var(--color-bg-card-hover))]'
-                  : 'bg-bg-panel group-hover:bg-bg-card-hover'}"
+                class="p-0 w-[40px] min-w-[40px] max-w-[40px] sticky left-0 z-30 transition-colors duration-150 border-r {isSelected
+                  ? 'bg-[color-mix(in_srgb,#00b578_12%,var(--color-bg-panel))] group-hover:bg-[color-mix(in_srgb,#00b578_12%,var(--color-bg-card-hover))] border-border-default/20'
+                  : 'bg-bg-panel group-hover:bg-bg-card-hover border-border-default/20'}"
                 onclick={(e) => e.stopPropagation()}
                 onmousedown={(e) => e.stopPropagation()}
               >
-                <div class="flex items-center justify-center py-2 w-full h-full">
+                <div class="flex items-center justify-center py-2.5 w-full h-full">
                   <input
                     type="checkbox"
                     checked={isSelected}
@@ -463,36 +464,32 @@ function hideEmptyColumns() {
                 </div>
               </td>
 
-              <!-- Custom Snippet Render -->
-              {#if rowSnippet}
-                {@render rowSnippet(item, isSelected, index)}
-              {:else}
-                {#each visibleColumns as col}
-                  {@const width =
-                    (columnWidths[col.key] || col.width || 120) + "px"}
-                  <td
-                    class="py-2 px-3 border-r border-border-default/20 transition-colors duration-150 {col.key ===
-                    'index'
-                      ? 'text-center font-mono'
-                      : ''} {col.key === 'name'
-                      ? 'font-bold text-text-hover'
-                      : ''} {col.key === 'actions'
-                      ? `sticky right-0 z-30 shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.25)] group-hover:z-30 focus-within:z-30 ${
-                          isSelected
-                            ? 'bg-[color-mix(in_srgb,#00b578_12%,var(--color-bg-panel))] group-hover:bg-[color-mix(in_srgb,#00b578_12%,var(--color-bg-card-hover))]'
-                            : 'bg-bg-panel group-hover:bg-bg-card-hover'
-                        }`
-                      : ''}"
-                    style="width: {width}; min-width: {width}; max-width: {width};"
-                  >
-                    {#if renderCell}
-                      {@render renderCell(col.key, item, index, col)}
-                    {:else}
-                      {item[col.key] ?? "-"}
-                    {/if}
-                  </td>
-                {/each}
-              {/if}
+              <!-- Dynamic Column Cells -->
+              {#each visibleColumns as col}
+                {@const width =
+                  (columnWidths[col.key] || col.width || 120) + "px"}
+                <td
+                  class="py-2.5 px-3 border-r transition-colors duration-150 {col.key ===
+                  'index'
+                    ? 'text-center font-mono'
+                    : ''} {col.key === 'name'
+                    ? 'font-bold text-text-hover'
+                    : ''} {col.key === 'actions'
+                    ? `sticky right-0 z-30 shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.25)] group-hover:z-30 focus-within:z-30 ${
+                        isSelected
+                          ? 'bg-[color-mix(in_srgb,#00b578_12%,var(--color-bg-panel))] group-hover:bg-[color-mix(in_srgb,#00b578_12%,var(--color-bg-card-hover))] border-border-default/20'
+                          : 'bg-bg-panel group-hover:bg-bg-card-hover border-border-default/20'
+                      }`
+                    : 'border-border-default/20'}"
+                  style="width: {width}; min-width: {width}; max-width: {width};"
+                >
+                  {#if renderCell}
+                    {@render renderCell(col.key, item, index, col)}
+                  {:else}
+                    {item[col.key] ?? "-"}
+                  {/if}
+                </td>
+              {/each}
             </tr>
           {/each}
         {/if}
@@ -505,7 +502,7 @@ function hideEmptyColumns() {
     <footer
       class="shrink-0 flex flex-col lg:flex-row items-center justify-between border-t border-border-default px-4 py-2.5 select-none z-10 relative bg-bg-panel gap-3 font-sans text-xs"
     >
-      <!-- Details -->
+      <!-- Left: Counter Pill -->
       <div
         class="flex items-center select-none w-full lg:w-auto justify-center lg:justify-start"
       >
@@ -530,7 +527,12 @@ function hideEmptyColumns() {
         </div>
       </div>
 
-      <!-- Page Size & Controls -->
+      <!-- Center: Optional Filters Snippet -->
+      {#if renderFooterCenter}
+        {@render renderFooterCenter()}
+      {/if}
+
+      <!-- Right: Page Size & Navigation Controls -->
       <div class="flex items-center gap-3">
         <select
           bind:value={pageSize}
