@@ -10,6 +10,7 @@ class EmulatorsStore {
   filterStatus = $state<EmulatorFilterStatus>("all");
   searchQuery = $state("");
   selectedGroup = $state("all");
+  private pollTimer: ReturnType<typeof setInterval> | null = null;
 
   filteredInstances = $derived<Emulator[]>(
     this.instances.filter((inst) => {
@@ -34,6 +35,37 @@ class EmulatorsStore {
   runningCount = $derived<number>(this.instances.filter((i) => i.is_running).length);
   stoppedCount = $derived<number>(this.instances.filter((i) => !i.is_running).length);
 
+  constructor() {
+    this.startPolling();
+  }
+
+  startPolling() {
+    if (this.pollTimer) return;
+    this.pollTimer = setInterval(() => {
+      this.syncStatusSilent();
+    }, 3000);
+  }
+
+  stopPolling() {
+    if (this.pollTimer) {
+      clearInterval(this.pollTimer);
+      this.pollTimer = null;
+    }
+  }
+
+  async syncStatusSilent() {
+    try {
+      const path = settingsStore.settings.ldplayerPath;
+      if (!path) return;
+      const res = await invoke<Emulator[]>("list_emulators", {
+        ldplayerDir: path,
+      });
+      this.instances = res;
+    } catch {
+      // Silent in background poll
+    }
+  }
+
   async refresh() {
     this.isLoading = true;
     try {
@@ -52,23 +84,43 @@ class EmulatorsStore {
 
   async launch(index: number) {
     try {
+      // Optimistic UI state update
+      const target = this.instances.find((i) => i.index === index);
+      if (target) {
+        target.is_running = true;
+      }
+
       const path = settingsStore.settings.ldplayerPath;
       await invoke("launch_emulator", { ldplayerDir: path, index });
       logsStore.success("Instance", `Launched emulator #${index}`);
-      setTimeout(() => this.refresh(), 2000);
+
+      setTimeout(() => this.syncStatusSilent(), 800);
+      setTimeout(() => this.syncStatusSilent(), 2000);
+      setTimeout(() => this.syncStatusSilent(), 4000);
     } catch (e) {
       logsStore.error("Instance", `Failed to launch emulator #${index}: ${e}`);
+      this.syncStatusSilent();
     }
   }
 
   async quit(index: number) {
     try {
+      // Optimistic UI state update
+      const target = this.instances.find((i) => i.index === index);
+      if (target) {
+        target.is_running = false;
+        target.pid = -1;
+      }
+
       const path = settingsStore.settings.ldplayerPath;
       await invoke("quit_emulator", { ldplayerDir: path, index });
       logsStore.info("Instance", `Closed emulator #${index}`);
-      setTimeout(() => this.refresh(), 1000);
+
+      setTimeout(() => this.syncStatusSilent(), 600);
+      setTimeout(() => this.syncStatusSilent(), 1500);
     } catch (e) {
       logsStore.error("Instance", `Failed to quit emulator #${index}: ${e}`);
+      this.syncStatusSilent();
     }
   }
 
@@ -86,10 +138,14 @@ class EmulatorsStore {
 
   async quitAll() {
     try {
+      for (const inst of this.instances) {
+        inst.is_running = false;
+        inst.pid = -1;
+      }
       const path = settingsStore.settings.ldplayerPath;
       await invoke("quit_all_emulators", { ldplayerDir: path });
       logsStore.info("Engine", "Closed all running emulators");
-      setTimeout(() => this.refresh(), 1000);
+      setTimeout(() => this.syncStatusSilent(), 1000);
     } catch (e) {
       logsStore.error("Engine", `Failed to quit all emulators: ${e}`);
     }

@@ -74,6 +74,33 @@ pub fn auto_detect_ldplayer() -> Option<String> {
     None
 }
 
+fn is_ldplayer_running(parts: &[&str]) -> bool {
+    let process_alive = |pos: usize| {
+        parts
+            .get(pos)
+            .and_then(|v| v.trim().parse::<i32>().ok())
+            .map(|pid| pid > 0)
+            .unwrap_or(false)
+    };
+
+    let hwnd_alive = |pos: usize| {
+        parts
+            .get(pos)
+            .and_then(|v| v.trim().parse::<i64>().ok())
+            .map(|hwnd| hwnd > 0)
+            .unwrap_or(false)
+    };
+
+    parts
+        .get(4)
+        .map(|v| v.trim() == "1" || v.trim() == "true")
+        .unwrap_or(false)
+        || process_alive(5)
+        || process_alive(6)
+        || hwnd_alive(2)
+        || hwnd_alive(3)
+}
+
 #[tauri::command]
 pub async fn list_emulators(ldplayer_dir: String) -> Result<Vec<Emulator>, String> {
     let raw = run_ldconsole_cmd(&ldplayer_dir, &["list2"]).await?;
@@ -92,9 +119,13 @@ pub async fn list_emulators(ldplayer_dir: String) -> Result<Vec<Emulator>, Strin
         let name = parts[1].trim().to_string();
         let top_hwnd = parts[2].trim().to_string();
         let bind_hwnd = parts[3].trim().to_string();
-        let is_running = parts[4].trim() == "1";
+        let is_running = is_ldplayer_running(&parts);
         let pid: i32 = parts[5].trim().parse().unwrap_or(-1);
         let vbox_pid: i32 = parts[6].trim().parse().unwrap_or(-1);
+
+        let width = parts.get(7).and_then(|v| v.trim().parse().ok()).unwrap_or(720);
+        let height = parts.get(8).and_then(|v| v.trim().parse().ok()).unwrap_or(1280);
+        let dpi = parts.get(9).and_then(|v| v.trim().parse().ok()).unwrap_or(320);
 
         emulators.push(Emulator {
             index,
@@ -104,9 +135,9 @@ pub async fn list_emulators(ldplayer_dir: String) -> Result<Vec<Emulator>, Strin
             is_running,
             pid,
             vbox_pid,
-            width: 720,
-            height: 1280,
-            dpi: 320,
+            width,
+            height,
+            dpi,
             brand: "Samsung".into(),
             model: "Galaxy S22".into(),
             imei: "".into(),
