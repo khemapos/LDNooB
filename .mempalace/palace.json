@@ -83,6 +83,11 @@
           "id": "test-engineer",
           "name": "Automated Testing & QA Verification",
           "path": "../.agents/skills/test-engineer/SKILL.md"
+        },
+        {
+          "id": "codebase-explorer",
+          "name": "Deep Codebase Explorer & Expert Reviewer",
+          "path": "../.agents/skills/codebase-explorer/SKILL.md"
         }
       ]
     },
