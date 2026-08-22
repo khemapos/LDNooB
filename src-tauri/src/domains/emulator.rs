@@ -168,10 +168,77 @@ pub async fn quit_all_emulators(ldplayer_dir: String) -> Result<(), String> {
     Ok(())
 }
 
-#[tauri::command]
-pub async fn add_emulator(ldplayer_dir: String, name: String) -> Result<(), String> {
-    run_ldconsole_cmd(&ldplayer_dir, &["add", &name]).await?;
+fn apply_default_instance_settings(
+    ldplayer_dir: &str,
+    index: i32,
+    remember_wnd: bool,
+    auto_rotate: bool,
+    lock_window: bool,
+    system_disk_writable: bool,
+) -> Result<(), String> {
+    let config_path = std::path::Path::new(ldplayer_dir)
+        .join("vms")
+        .join("config")
+        .join(format!("leidian{}.config", index));
+
+    if !config_path.exists() {
+        return Ok(());
+    }
+
+    let content = std::fs::read_to_string(&config_path)
+        .map_err(|e| format!("Failed to read config file: {}", e))?;
+
+    let mut json_val: serde_json::Value = serde_json::from_str(&content)
+        .map_err(|e| format!("Failed to parse config file JSON: {}", e))?;
+
+    if let Some(obj) = json_val.as_object_mut() {
+        obj.insert("basicSettings.adbDebug".to_string(), serde_json::Value::from(1));
+        obj.insert("basicSettings.rootMode".to_string(), serde_json::Value::from(true));
+        obj.insert("basicSettings.rememberWndPos".to_string(), serde_json::Value::from(remember_wnd));
+        obj.insert("basicSettings.autoRotate".to_string(), serde_json::Value::from(auto_rotate));
+        obj.insert("basicSettings.lockWindowSize".to_string(), serde_json::Value::from(lock_window));
+        obj.insert("advancedSettings.systemDiskMode".to_string(), serde_json::Value::from(if system_disk_writable { 1 } else { 0 }));
+
+        let updated = serde_json::to_string_pretty(&json_val)
+            .map_err(|e| format!("Failed to serialize config JSON: {}", e))?;
+        let _ = std::fs::write(&config_path, updated);
+    }
     Ok(())
+}
+
+#[tauri::command]
+pub async fn add_emulator(
+    ldplayer_dir: String,
+    name: Option<String>,
+    remember_wnd: Option<bool>,
+    auto_rotate: Option<bool>,
+    lock_window: Option<bool>,
+    system_disk_writable: Option<bool>,
+) -> Result<i32, String> {
+    let mut args = vec!["add"];
+    let name_str;
+    if let Some(ref n) = name {
+        if !n.trim().is_empty() {
+            args.push("--name");
+            name_str = n.trim().to_string();
+            args.push(&name_str);
+        }
+    }
+    let raw = run_ldconsole_cmd(&ldplayer_dir, &args).await?;
+    let index: i32 = raw.trim().parse().unwrap_or(-1);
+
+    if index >= 0 {
+        let _ = apply_default_instance_settings(
+            &ldplayer_dir,
+            index,
+            remember_wnd.unwrap_or(true),
+            auto_rotate.unwrap_or(false),
+            lock_window.unwrap_or(true),
+            system_disk_writable.unwrap_or(true),
+        );
+    }
+
+    Ok(index)
 }
 
 #[tauri::command]
@@ -217,6 +284,7 @@ pub async fn modify_emulator(
     resolution: Option<String>,
     cpu: Option<i32>,
     memory: Option<i32>,
+    root: Option<String>,
 ) -> Result<(), String> {
     let index_str = index.to_string();
     let mut args = vec!["modify", "--index", &index_str];
@@ -234,6 +302,10 @@ pub async fn modify_emulator(
     if let Some(ref m) = mem_str {
         args.push("--memory");
         args.push(m);
+    }
+    if let Some(ref root_val) = root {
+        args.push("--root");
+        args.push(root_val);
     }
 
     run_ldconsole_cmd(&ldplayer_dir, &args).await?;
