@@ -52,6 +52,20 @@ function openModify(emu: Emulator) {
   modifyTarget = emu;
   showModifyModal = true;
 }
+// Segmented Switcher Sliding Pill State
+let tabRefs: Record<string, HTMLButtonElement | null> = $state({});
+let indicatorStyle = $state({ left: 2, width: 0 });
+
+$effect(() => {
+  const currentKey = emulatorsStore.filterStatus;
+  const targetEl = tabRefs[currentKey];
+  if (targetEl) {
+    indicatorStyle = {
+      left: targetEl.offsetLeft,
+      width: targetEl.offsetWidth,
+    };
+  }
+});
 </script>
 
 <div class="flex-1 flex flex-col h-full gap-3 overflow-hidden font-sans select-none">
@@ -126,21 +140,30 @@ function openModify(emu: Emulator) {
 
     <!-- Right: Segmented Status Filter, Search, & Refresh -->
     <div class="flex items-center gap-2.5">
-      <!-- Status Segmented Switcher -->
+      <!-- Status Segmented Switcher with Smooth Animated Pill -->
       <div
-        class="flex items-center p-0.5 bg-bg-app border border-border-default rounded-xl text-xs font-semibold shadow-inner"
+        class="relative flex items-center p-0.5 bg-bg-app border border-border-default rounded-xl text-xs font-semibold shadow-inner"
       >
+        <!-- Smooth Animated Sliding Pill Background -->
+        {#if indicatorStyle.width > 0}
+          <div
+            class="absolute top-0.5 bottom-0.5 rounded-lg bg-bg-card border border-border-default shadow-xs transition-all duration-200 cubic-bezier(0.16,1,0.3,1) pointer-events-none z-0"
+            style="left: {indicatorStyle.left}px; width: {indicatorStyle.width}px;"
+          ></div>
+        {/if}
+
         <button
           type="button"
+          bind:this={tabRefs["all"]}
           onclick={() => (emulatorsStore.filterStatus = "all")}
-          class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all cursor-pointer {emulatorsStore.filterStatus ===
+          class="relative z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-colors duration-150 cursor-pointer {emulatorsStore.filterStatus ===
           'all'
-            ? 'bg-bg-card text-text-hover shadow-xs border border-border-default font-bold'
+            ? 'text-text-hover font-bold'
             : 'text-text-muted hover:text-text-hover'}"
         >
           <span>All</span>
           <span
-            class="px-1.5 py-0.2 rounded-full text-[10px] font-mono {emulatorsStore.filterStatus ===
+            class="px-1.5 py-0.2 rounded-full text-[10px] font-mono transition-colors duration-150 {emulatorsStore.filterStatus ===
             'all'
               ? 'bg-bg-app text-[#00b578]'
               : 'bg-bg-card text-text-muted'}"
@@ -151,16 +174,17 @@ function openModify(emu: Emulator) {
 
         <button
           type="button"
+          bind:this={tabRefs["running"]}
           onclick={() => (emulatorsStore.filterStatus = "running")}
-          class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all cursor-pointer {emulatorsStore.filterStatus ===
+          class="relative z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-colors duration-150 cursor-pointer {emulatorsStore.filterStatus ===
           'running'
-            ? 'bg-bg-card text-text-hover shadow-xs border border-border-default font-bold'
+            ? 'text-text-hover font-bold'
             : 'text-text-muted hover:text-text-hover'}"
         >
           <span class="w-1.5 h-1.5 rounded-full bg-[#00b578] animate-pulse"></span>
           <span>Running</span>
           <span
-            class="px-1.5 py-0.2 rounded-full text-[10px] font-mono {emulatorsStore.filterStatus ===
+            class="px-1.5 py-0.2 rounded-full text-[10px] font-mono transition-colors duration-150 {emulatorsStore.filterStatus ===
             'running'
               ? 'bg-bg-app text-[#00b578]'
               : 'bg-bg-card text-text-muted'}"
@@ -171,16 +195,17 @@ function openModify(emu: Emulator) {
 
         <button
           type="button"
+          bind:this={tabRefs["stopped"]}
           onclick={() => (emulatorsStore.filterStatus = "stopped")}
-          class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all cursor-pointer {emulatorsStore.filterStatus ===
+          class="relative z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-colors duration-150 cursor-pointer {emulatorsStore.filterStatus ===
           'stopped'
-            ? 'bg-bg-card text-text-hover shadow-xs border border-border-default font-bold'
+            ? 'text-text-hover font-bold'
             : 'text-text-muted hover:text-text-hover'}"
         >
           <span class="w-1.5 h-1.5 rounded-full bg-zinc-500"></span>
           <span>Stopped</span>
           <span
-            class="px-1.5 py-0.2 rounded-full text-[10px] font-mono {emulatorsStore.filterStatus ===
+            class="px-1.5 py-0.2 rounded-full text-[10px] font-mono transition-colors duration-150 {emulatorsStore.filterStatus ===
             'stopped'
               ? 'bg-bg-app text-text-default'
               : 'bg-bg-card text-text-muted'}"

@@ -132,6 +132,25 @@ function getLevelBadgeClass(level: string) {
   }
   return "bg-[#ff4d4f]/15 text-[#ff4d4f] border-[#ff4d4f]/30";
 }
+let catRefs: Record<string, HTMLButtonElement | null> = $state({});
+let catIndicator = $state({ left: 2, width: 0 });
+
+let lvlRefs: Record<string, HTMLButtonElement | null> = $state({});
+let lvlIndicator = $state({ left: 2, width: 0 });
+
+$effect(() => {
+  const el = catRefs[selectedCategory];
+  if (el) {
+    catIndicator = { left: el.offsetLeft, width: el.offsetWidth };
+  }
+});
+
+$effect(() => {
+  const el = lvlRefs[selectedLevel];
+  if (el) {
+    lvlIndicator = { left: el.offsetLeft, width: el.offsetWidth };
+  }
+});
 </script>
 
 {#if logsStore.isPanelOpen}
@@ -158,20 +177,27 @@ function getLevelBadgeClass(level: string) {
 
         <span class="h-4 border-l border-border-default mx-1.5"></span>
 
-        <!-- Category Tabs -->
+        <!-- Category Tabs with Smooth Sliding Pill -->
         <div class="flex items-center gap-1.5 select-none font-bold shrink-0">
           <span class="text-[9px] font-black uppercase tracking-wider text-text-muted">
             Category
           </span>
           <div class="flex items-center gap-0.5 p-0.5 h-7 rounded-lg border bg-bg-app border-border-default relative shrink-0">
+            {#if catIndicator.width > 0}
+              <div
+                class="absolute top-0.5 bottom-0.5 rounded-md bg-bg-card border border-border-default shadow-xs transition-all duration-200 cubic-bezier(0.16,1,0.3,1) pointer-events-none z-0"
+                style="left: {catIndicator.left}px; width: {catIndicator.width}px;"
+              ></div>
+            {/if}
             {#each categories as cat}
               {@const isSelected = selectedCategory === cat}
               <button
                 type="button"
+                bind:this={catRefs[cat]}
                 onclick={() => (selectedCategory = cat)}
                 title={cat}
-                class="px-2.5 min-w-[38px] h-[22px] flex items-center justify-center text-[9px] font-black rounded-md cursor-pointer transition-colors duration-150 relative shrink-0 {isSelected
-                  ? 'text-text-hover bg-bg-card border border-border-hover/75 shadow-xs'
+                class="px-2.5 min-w-[38px] h-[22px] flex items-center justify-center text-[9px] font-black rounded-md cursor-pointer transition-colors duration-150 relative z-10 shrink-0 {isSelected
+                  ? 'text-text-hover font-bold'
                   : 'text-text-muted hover:text-text-hover'}"
               >
                 <span>{cat === "Facebook Registration" ? "FB Reg" : cat}</span>
@@ -182,19 +208,26 @@ function getLevelBadgeClass(level: string) {
 
         <span class="h-4 border-l border-border-default mx-1.5"></span>
 
-        <!-- Level Tabs -->
+        <!-- Level Tabs with Smooth Sliding Pill -->
         <div class="flex items-center gap-1.5 select-none shrink-0">
           <span class="text-[9px] font-black uppercase tracking-wider text-text-muted">
             Severity
           </span>
           <div class="flex items-center gap-0.5 p-0.5 h-7 rounded-lg border bg-bg-app border-border-default relative shrink-0">
+            {#if lvlIndicator.width > 0}
+              <div
+                class="absolute top-0.5 bottom-0.5 rounded-md bg-bg-card border border-border-default shadow-xs transition-all duration-200 cubic-bezier(0.16,1,0.3,1) pointer-events-none z-0"
+                style="left: {lvlIndicator.left}px; width: {lvlIndicator.width}px;"
+              ></div>
+            {/if}
             {#each severities as lvl}
               {@const isSelected = selectedLevel === lvl}
               <button
                 type="button"
+                bind:this={lvlRefs[lvl]}
                 onclick={() => (selectedLevel = lvl)}
-                class="px-2.5 min-w-[44px] h-[22px] text-[9px] font-bold flex items-center justify-center gap-1 rounded-md cursor-pointer transition-colors duration-150 relative shrink-0 {isSelected
-                  ? 'text-text-hover bg-bg-card border border-border-hover/75 shadow-xs'
+                class="px-2.5 min-w-[44px] h-[22px] text-[9px] font-bold flex items-center justify-center gap-1 rounded-md cursor-pointer transition-colors duration-150 relative z-10 shrink-0 {isSelected
+                  ? 'text-text-hover font-bold'
                   : 'text-text-muted hover:text-text-hover'}"
               >
                 {#if lvl !== "All"}
