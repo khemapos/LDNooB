@@ -12,10 +12,14 @@ let showProxyModal = $state(false);
 let importInput = $state("");
 
 let columns = $state<ColumnConfig[]>([
-  { key: "uid", label: "UID / Account ID", visible: true, canHide: false, width: 170 },
-  { key: "status", label: "Status", visible: true, canHide: true, width: 120, align: "center" },
-  { key: "proxy", label: "Assigned Proxy", visible: true, canHide: true, width: 200 },
-  { key: "twoFA", label: "2FA Secret", visible: true, canHide: true, width: 140 },
+  { key: "index", label: "Index", visible: true, canHide: true, width: 65, align: "center" },
+  { key: "hostEmulator", label: "Host Emulator", visible: true, canHide: true, width: 140 },
+  { key: "uid", label: "UID / Name", visible: true, canHide: false, width: 140 },
+  { key: "profileName", label: "Profile Name", visible: true, canHide: true, width: 130 },
+  { key: "password", label: "Password", visible: true, canHide: true, width: 120 },
+  { key: "twoFA", label: "2FA Key", visible: true, canHide: true, width: 110 },
+  { key: "proxy", label: "Proxy", visible: true, canHide: true, width: 140 },
+  { key: "status", label: "FB Status", visible: true, canHide: true, width: 100, align: "center" },
   { key: "actions", label: "Actions", visible: true, canHide: false, width: 100, align: "right" },
 ]);
 
@@ -30,14 +34,14 @@ function handleImport() {
 <div class="flex-1 flex flex-col h-full gap-3 overflow-hidden">
   <!-- Accounts Command Toolbar -->
   <div
-    class="flex flex-wrap items-center justify-between gap-3 p-3 bg-white/90 dark:bg-[#0e1018]/90 border border-slate-200/90 dark:border-white/[0.08] backdrop-blur-xl rounded-2xl shadow-xs"
+    class="flex flex-wrap items-center justify-between gap-3 p-3 bg-[#141517] border border-[#25272b] rounded-2xl shadow-xs"
   >
     <div class="flex items-center gap-2">
       <!-- Import Accounts Button (Brand Blue) -->
       <button
         type="button"
         onclick={() => (showImportModal = true)}
-        class="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-[#1890ff] to-[#096dd9] hover:from-[#40a9ff] hover:to-[#1890ff] transition-all shadow-[0_2px_10px_rgba(24,144,255,0.3)] cursor-pointer"
+        class="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-[#1877f2] to-[#166fe5] hover:from-[#40a9ff] hover:to-[#1877f2] transition-all shadow-[0_2px_10px_rgba(24,119,242,0.3)] cursor-pointer"
       >
         <Icon name="plus" size={14} />
         <span>Import Accounts</span>
@@ -46,15 +50,15 @@ function handleImport() {
       <button
         type="button"
         onclick={() => (showProxyModal = true)}
-        class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-white/[0.04] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/[0.06] hover:bg-slate-200 dark:hover:bg-white/[0.08] transition-colors cursor-pointer"
+        class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#18191c] text-[#d9d9d9] border border-[#25272b] hover:bg-[#1f2125] transition-colors cursor-pointer"
       >
         <Icon name="network" size={12} />
         <span>Proxy Pool ({proxiesStore.proxies.length})</span>
       </button>
     </div>
 
-    <div class="text-xs font-mono text-slate-500 dark:text-slate-400">
-      Total Accounts: {accountsStore.accounts.length}
+    <div class="text-xs font-mono text-[#8c8c8c]">
+      Total Accounts: <strong class="text-white">{accountsStore.accounts.length}</strong>
     </div>
   </div>
 
@@ -66,52 +70,86 @@ function handleImport() {
       bind:selectedKeys={accountsStore.selectedUids}
       itemKey="uid"
     >
-      {#snippet rowSnippet(item: FacebookAccount, isSelected: boolean)}
+      {#snippet rowSnippet(item: FacebookAccount, isSelected: boolean, index: number)}
+        <!-- Index -->
+        {#if columns.find(c => c.key === "index")?.visible}
+          <td class="py-2.5 px-3 text-center font-mono font-bold text-[#8c8c8c] border-r border-[#25272b]/30">
+            {index + 1}
+          </td>
+        {/if}
+
+        <!-- Host Emulator -->
+        {#if columns.find(c => c.key === "hostEmulator")?.visible}
+          <td class="py-2.5 px-3 font-sans text-xs text-[#8c8c8c] border-r border-[#25272b]/30">
+            {#if item.emuIndex >= 0}
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-[#18191c] text-[#00b578] font-mono text-[11px]">
+                #{item.emuIndex}
+              </span>
+            {:else}
+              <span class="text-[#8c8c8c] italic text-[11px]">Unassigned</span>
+            {/if}
+          </td>
+        {/if}
+
         <!-- UID -->
         {#if columns.find(c => c.key === "uid")?.visible}
-          <td class="py-2.5 px-3 font-mono font-bold text-slate-900 dark:text-white border-r border-slate-100 dark:border-white/[0.04]">
+          <td class="py-2.5 px-3 font-mono font-bold text-white border-r border-[#25272b]/30">
             {item.uid}
+          </td>
+        {/if}
+
+        <!-- Profile Name -->
+        {#if columns.find(c => c.key === "profileName")?.visible}
+          <td class="py-2.5 px-3 text-[#d9d9d9] font-sans text-xs border-r border-[#25272b]/30">
+            {item.username || "-"}
+          </td>
+        {/if}
+
+        <!-- Password -->
+        {#if columns.find(c => c.key === "password")?.visible}
+          <td class="py-2.5 px-3 font-mono text-xs text-[#8c8c8c] border-r border-[#25272b]/30">
+            ••••••••
+          </td>
+        {/if}
+
+        <!-- 2FA -->
+        {#if columns.find(c => c.key === "twoFA")?.visible}
+          <td class="py-2.5 px-3 font-mono text-xs text-[#8c8c8c] border-r border-[#25272b]/30">
+            {item.twoFA ? "••••••••" : "-"}
+          </td>
+        {/if}
+
+        <!-- Proxy -->
+        {#if columns.find(c => c.key === "proxy")?.visible}
+          <td class="py-2.5 px-3 font-mono text-xs text-[#8c8c8c] border-r border-[#25272b]/30">
+            {item.proxy || "Direct"}
           </td>
         {/if}
 
         <!-- Status -->
         {#if columns.find(c => c.key === "status")?.visible}
-          <td class="py-2.5 px-3 text-center border-r border-slate-100 dark:border-white/[0.04]">
+          <td class="py-2.5 px-3 text-center border-r border-[#25272b]/30">
             <span
-              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20"
+              class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#1877f2]/10 text-[#1877f2] border border-[#1877f2]/20"
             >
               {item.status}
             </span>
           </td>
         {/if}
 
-        <!-- Proxy -->
-        {#if columns.find(c => c.key === "proxy")?.visible}
-          <td class="py-2.5 px-3 text-xs font-mono text-slate-600 dark:text-slate-400 border-r border-slate-100 dark:border-white/[0.04]">
-            {item.proxy || "Direct (No Proxy)"}
-          </td>
-        {/if}
-
-        <!-- 2FA -->
-        {#if columns.find(c => c.key === "twoFA")?.visible}
-          <td class="py-2.5 px-3 text-xs font-mono text-slate-500 dark:text-slate-400 border-r border-slate-100 dark:border-white/[0.04]">
-            {item.twoFA ? "••••••••" : "-"}
-          </td>
-        {/if}
-
         <!-- Actions -->
         {#if columns.find(c => c.key === "actions")?.visible}
           <td
-            class="py-2.5 px-3 text-right sticky right-0 z-10 shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.1)] dark:shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.4)] {isSelected
-              ? 'bg-blue-500/[0.06] dark:bg-[#101520]'
-              : 'bg-white dark:bg-[#0c0e15] group-hover:bg-slate-50 dark:group-hover:bg-[#12141f]'}"
+            class="py-2.5 px-3 text-right sticky right-0 z-10 shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.3)] {isSelected
+              ? 'bg-[#121c18]'
+              : 'bg-[#141517] group-hover:bg-[#1f2125]'}"
             onclick={(e) => e.stopPropagation()}
           >
             <button
               type="button"
               title="Delete Account"
               onclick={() => accountsStore.removeAccount(item.uid)}
-              class="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-500/10 transition-colors cursor-pointer"
+              class="p-1.5 rounded-lg text-[#8c8c8c] hover:text-[#ff4d4f] hover:bg-[#ff4d4f]/10 transition-colors cursor-pointer"
             >
               <Icon name="trash" size={13} />
             </button>
@@ -122,7 +160,7 @@ function handleImport() {
   </div>
 </div>
 
-<!-- Import Modal -->
+<!-- Modals -->
 <BaseModal
   bind:open={showImportModal}
   title="Batch Import Facebook Accounts"
@@ -134,7 +172,7 @@ function handleImport() {
       rows="6"
       placeholder="1000847291029|MyPassword123|JBSWY3DPEHPK3PXP|sb=123..."
       bind:value={importInput}
-      class="w-full p-3 text-xs rounded-xl bg-slate-50 dark:bg-[#07080d] border border-slate-200 dark:border-white/[0.08] text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-blue-500 font-mono shadow-inner resize-none"
+      class="w-full p-3 text-xs rounded-xl bg-[#0e0f11] border border-[#25272b] text-white placeholder-[#8c8c8c] focus:outline-none focus:border-[#1877f2] font-mono shadow-inner resize-none"
     ></textarea>
   </div>
 
@@ -142,7 +180,7 @@ function handleImport() {
     <button
       type="button"
       onclick={() => (showImportModal = false)}
-      class="px-4 py-2 text-xs font-semibold rounded-xl text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-white/[0.06] hover:bg-slate-200 dark:hover:bg-white/[0.12] transition-colors cursor-pointer"
+      class="px-4 py-2 text-xs font-semibold rounded-xl text-[#d9d9d9] bg-[#18191c] hover:bg-[#25272b] transition-colors cursor-pointer"
     >
       Cancel
     </button>
@@ -150,12 +188,11 @@ function handleImport() {
       type="button"
       disabled={!importInput.trim()}
       onclick={handleImport}
-      class="px-4 py-2 text-xs font-semibold rounded-xl text-white bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-400 hover:to-indigo-500 transition-all shadow-sm cursor-pointer disabled:opacity-50"
+      class="px-4 py-2 text-xs font-semibold rounded-xl text-white bg-gradient-to-r from-[#1877f2] to-[#166fe5] hover:from-[#40a9ff] hover:to-[#1877f2] transition-all shadow-sm cursor-pointer disabled:opacity-50"
     >
       Import Accounts
     </button>
   {/snippet}
 </BaseModal>
 
-<!-- Proxy Modal -->
 <ProxyInjectModal bind:open={showProxyModal} />

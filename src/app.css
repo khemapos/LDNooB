@@ -1,24 +1,109 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
-@variant dark (&:where(.dark, .dark *));
+@theme {
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+
+  /* Brand Colors */
+  --color-brand-green: #00b578;
+  --color-brand-green-hover: #00d28b;
+  --color-brand-green-light: rgba(0, 181, 120, 0.12);
+  --color-brand-green-border: rgba(0, 181, 120, 0.25);
+
+  --color-brand-blue: #1877f2;
+  --color-brand-blue-hover: #166fe5;
+  --color-brand-blue-light: rgba(24, 119, 242, 0.12);
+  --color-brand-blue-border: rgba(24, 119, 242, 0.25);
+
+  --color-brand-red: #ff4d4f;
+  --color-brand-red-hover: #ff7875;
+  --color-brand-red-light: rgba(255, 77, 79, 0.12);
+
+  --color-brand-yellow: #ffc107;
+
+  /* App Backgrounds & Cards */
+  --color-bg-app: #0e0f11;
+  --color-bg-panel: #141517;
+  --color-bg-card: #18191c;
+  --color-bg-card-hover: #1f2125;
+  --color-border-default: #25272b;
+  --color-border-hover: #33363c;
+
+  /* Typography */
+  --color-text-default: #d9d9d9;
+  --color-text-muted: #8c8c8c;
+  --color-text-hover: #ffffff;
+}
 
 :root {
-  color-scheme: light dark;
+  color-scheme: dark light;
 }
 
 html.dark {
-  color-scheme: dark;
-  background-color: #08090d;
+  background-color: var(--color-bg-app);
+  color: var(--color-text-default);
 }
 
 html:not(.dark) {
-  color-scheme: light;
-  background-color: #f8fafc;
+  --color-bg-app: #f8fafc;
+  --color-bg-panel: #ffffff;
+  --color-bg-card: #f1f5f9;
+  --color-bg-card-hover: #e2e8f0;
+  --color-border-default: #e2e8f0;
+  --color-border-hover: #cbd5e1;
+  --color-text-default: #334155;
+  --color-text-muted: #64748b;
+  --color-text-hover: #0f172a;
+  background-color: var(--color-bg-app);
+  color: var(--color-text-default);
 }
 
-/* Smooth transitions and scrollbars */
-* {
-  box-sizing: border-box;
+/* Base Desktop Styles */
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-bg-app);
+  color: var(--color-text-default);
+  margin: 0;
+  overflow-x: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+input,
+textarea,
+[contenteditable="true"],
+.select-text {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+}
+
+/* Custom Green Checkbox */
+.custom-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid #2d2f34;
+  border-radius: 4px;
+  background: rgba(21, 23, 30, 0.9);
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.custom-checkbox:hover {
+  border-color: #3d4454;
+  background: rgba(28, 31, 40, 0.9);
+  box-shadow: 0 0 0 3px rgba(0, 181, 120, 0.15);
+}
+
+.custom-checkbox:checked {
+  background: linear-gradient(135deg, #26d094, #00b578) !important;
+  border-color: transparent !important;
+  box-shadow: 0 1px 3px rgba(0, 181, 120, 0.3) !important;
 }
 
 /* Custom discreet scrollbar */
