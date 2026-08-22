@@ -18,6 +18,8 @@ export interface Emulator {
   group?: string;
   proxy?: string;
   fps?: number;
+  cpu?: number;
+  memory?: number;
 }
 
 export interface EmulatorConfig {

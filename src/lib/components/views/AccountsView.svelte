@@ -4,6 +4,7 @@ import { proxiesStore } from "$lib/stores/proxies.svelte";
 import type { FacebookAccount } from "$lib/types";
 import BaseModal from "../common/BaseModal.svelte";
 import BaseTable, { type ColumnConfig } from "../common/BaseTable.svelte";
+import CustomButton from "../common/CustomButton.svelte";
 import ProxyInjectModal from "../modals/ProxyInjectModal.svelte";
 import Icon from "../ui/Icon.svelte";
 
@@ -38,23 +39,23 @@ function handleImport() {
   >
     <div class="flex items-center gap-2">
       <!-- Import Accounts Button (Brand Blue) -->
-      <button
-        type="button"
+      <CustomButton
+        variant="blue"
+        size="md"
         onclick={() => (showImportModal = true)}
-        class="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-[#1877f2] to-[#166fe5] hover:from-[#40a9ff] hover:to-[#1877f2] transition-all shadow-[0_2px_10px_rgba(24,119,242,0.3)] cursor-pointer"
       >
         <Icon name="plus" size={14} />
         <span>Import Accounts</span>
-      </button>
+      </CustomButton>
 
-      <button
-        type="button"
+      <CustomButton
+        variant="secondary"
+        size="sm"
         onclick={() => (showProxyModal = true)}
-        class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#18191c] text-[#d9d9d9] border border-[#25272b] hover:bg-[#1f2125] transition-colors cursor-pointer"
       >
         <Icon name="network" size={12} />
         <span>Proxy Pool ({proxiesStore.proxies.length})</span>
-      </button>
+      </CustomButton>
     </div>
 
     <div class="text-xs font-mono text-[#8c8c8c]">
@@ -177,21 +178,22 @@ function handleImport() {
   </div>
 
   {#snippet footer()}
-    <button
-      type="button"
+    <CustomButton
+      variant="secondary"
+      size="md"
       onclick={() => (showImportModal = false)}
-      class="px-4 py-2 text-xs font-semibold rounded-xl text-[#d9d9d9] bg-[#18191c] hover:bg-[#25272b] transition-colors cursor-pointer"
     >
       Cancel
-    </button>
-    <button
-      type="button"
+    </CustomButton>
+
+    <CustomButton
+      variant="blue"
+      size="md"
       disabled={!importInput.trim()}
       onclick={handleImport}
-      class="px-4 py-2 text-xs font-semibold rounded-xl text-white bg-gradient-to-r from-[#1877f2] to-[#166fe5] hover:from-[#40a9ff] hover:to-[#1877f2] transition-all shadow-sm cursor-pointer disabled:opacity-50"
     >
       Import Accounts
-    </button>
+    </CustomButton>
   {/snippet}
 </BaseModal>
 

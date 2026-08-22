@@ -3,69 +3,98 @@ import { invoke } from "@tauri-apps/api/core";
 import { logsStore } from "$lib/stores/logs.svelte";
 import { settingsStore } from "$lib/stores/settings.svelte";
 import BaseModal from "../common/BaseModal.svelte";
+import CustomButton from "../common/CustomButton.svelte";
+import CustomInput from "../common/CustomInput.svelte";
 
 interface Props {
   open: boolean;
-  emulatorIndex?: number;
+  emulatorIndex: number;
 }
 
 let { open = $bindable(false), emulatorIndex = 0 }: Props = $props();
 
-let command = $state("getprop ro.product.model");
-let output = $state("");
-let isRunning = $state(false);
+let commandInput = $state("shell getprop ro.product.model");
+let output = $state<string[]>([]);
+let isExecuting = $state(false);
 
 async function handleExecute() {
-  if (!command.trim()) return;
-  isRunning = true;
+  if (!commandInput.trim()) return;
+  isExecuting = true;
+  output = [...output, `> adb -s emulator-5554 ${commandInput}`];
+
   try {
-    const path = settingsStore.settings.ldplayerPath;
     const res = await invoke<string>("run_adb_command", {
-      ldplayerDir: path,
+      ldPath: settingsStore.settings.ldplayerPath,
       index: emulatorIndex,
-      adbCommand: command.trim(),
+      adbCommand: commandInput.trim(),
     });
-    output = res || "(Command completed with no output)";
-    logsStore.adb(`[Emulator #${emulatorIndex}] $ ${command}`);
-  } catch (e) {
-    output = `Error: ${e}`;
-    logsStore.error("ADB", `Failed to execute: ${e}`);
+    output = [...output, res || "(Command completed with no output)"];
+  } catch (err: any) {
+    output = [...output, `Error: ${err.toString()}`];
+    logsStore.error("ADB", `ADB error on #${emulatorIndex}: ${err.toString()}`);
   } finally {
-    isRunning = false;
+    isExecuting = false;
   }
 }
 </script>
 
 <BaseModal
   bind:open
-  title="ADB Shell Terminal"
-  subtitle="Direct shell interface for emulator #{emulatorIndex}"
+  title="ADB Command Shell"
+  subtitle="Connected to emulator #{emulatorIndex}"
   icon="terminal"
-  maxWidth="max-w-2xl"
 >
-  <div class="space-y-3">
-    <!-- Input Command -->
-    <form onsubmit={(e) => { e.preventDefault(); handleExecute(); }} class="flex gap-2">
-      <input
-        type="text"
-        placeholder="e.g. pm list packages or input keyevent 3"
-        bind:value={command}
-        class="flex-1 px-3.5 py-2 text-xs rounded-xl bg-slate-50 dark:bg-[#07080d] border border-slate-200 dark:border-white/[0.08] text-slate-900 dark:text-white focus:outline-none focus:border-cyan-500 font-mono shadow-inner"
-      />
-      <button
-        type="submit"
-        disabled={isRunning}
-        class="px-4 py-2 text-xs font-semibold rounded-xl text-slate-950 bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 transition-all cursor-pointer disabled:opacity-50"
-      >
-        {isRunning ? "Running..." : "Execute"}
-      </button>
-    </form>
-
-    <!-- Terminal Output -->
+  <div class="space-y-3 font-sans">
+    <!-- Command Output Terminal -->
     <div
-      class="w-full h-64 p-4 rounded-xl bg-[#07080d] border border-white/[0.08] font-mono text-xs text-emerald-400 overflow-y-auto whitespace-pre-wrap select-text"
+      class="h-64 p-3.5 bg-[#0a0b0d] border border-[#25272b] rounded-xl overflow-y-auto font-mono text-[11px] text-[#00b578] space-y-1 select-text"
     >
-      {output || "# Output will appear here after execution..."}
+      <div class="text-[#8c8c8c]">--- ADB Shell Session Initialized ---</div>
+      {#each output as line}
+        <div class="whitespace-pre-wrap">{line}</div>
+      {/each}
     </div>
+
+    <!-- Command Input Bar -->
+    <form
+      onsubmit={(e) => {
+        e.preventDefault();
+        handleExecute();
+      }}
+      class="flex items-center gap-2"
+    >
+      <CustomInput
+        placeholder="e.g. shell input keyevent 4"
+        bind:value={commandInput}
+        icon="terminal"
+        class="flex-1"
+      />
+      <CustomButton
+        type="submit"
+        variant="primary"
+        size="md"
+        disabled={!commandInput.trim() || isExecuting}
+        loading={isExecuting}
+      >
+        Send
+      </CustomButton>
+    </form>
   </div>
+
+  {#snippet footer()}
+    <CustomButton
+      variant="secondary"
+      size="md"
+      onclick={() => (output = [])}
+    >
+      Clear Screen
+    </CustomButton>
+    <CustomButton
+      variant="secondary"
+      size="md"
+      onclick={() => (open = false)}
+    >
+      Close
+    </CustomButton>
+  {/snippet}
 </BaseModal>

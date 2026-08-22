@@ -1,4 +1,5 @@
 <script lang="ts">
+import type { Snippet } from "svelte";
 import Icon from "../ui/Icon.svelte";
 
 interface Props {
@@ -8,8 +9,8 @@ interface Props {
   icon?: any;
   maxWidth?: string;
   onClose?: () => void;
-  children?: any;
-  footer?: any;
+  children?: Snippet;
+  footer?: Snippet;
 }
 
 let {
@@ -40,7 +41,7 @@ function closeModal() {
 
 {#if open}
   <div
-    class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-150"
+    class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-in fade-in duration-150 select-none"
     role="presentation"
     onclick={(e) => {
       if (e.target === e.currentTarget) closeModal();
@@ -49,26 +50,24 @@ function closeModal() {
     <div
       role="dialog"
       aria-modal="true"
-      class="relative w-full {maxWidth} bg-white dark:bg-[#0e1018] border border-slate-200 dark:border-white/[0.08] shadow-2xl rounded-2xl overflow-hidden backdrop-blur-2xl flex flex-col transition-all duration-150 ring-1 ring-inset ring-transparent dark:ring-white/[0.03] max-h-[90vh]"
+      class="relative w-full {maxWidth} bg-[#131416] border border-[#25272b] shadow-2xl rounded-2xl overflow-hidden backdrop-blur-md flex flex-col transition-all duration-200 max-h-[90vh] text-white"
     >
-      <!-- Modal Header -->
+      <!-- Dialog Header matching D:\ldremote -->
       <div
-        class="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-white/[0.06] bg-slate-50/50 dark:bg-white/[0.02]"
+        class="flex items-center justify-between px-6 py-4 border-b border-[#25272b] bg-[#141517]"
       >
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2.5">
           {#if icon}
-            <div
-              class="w-8 h-8 rounded-lg bg-cyan-500/10 dark:bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 border border-cyan-500/25 flex items-center justify-center shrink-0"
-            >
-              <Icon name={icon} size={16} />
+            <div class="w-6 h-6 rounded-lg bg-[#00b578]/10 text-[#00b578] flex items-center justify-center shrink-0">
+              <Icon name={icon} size={14} />
             </div>
           {/if}
           <div>
-            <h3 class="text-sm font-bold text-slate-900 dark:text-white tracking-tight">
+            <h3 class="text-[11.5px] font-extrabold uppercase tracking-widest text-[#d9d9d9] font-sans">
               {title}
             </h3>
             {#if subtitle}
-              <p class="text-xs text-slate-500 dark:text-slate-400">
+              <p class="text-[10px] text-[#8c8c8c] mt-0.5 font-sans">
                 {subtitle}
               </p>
             {/if}
@@ -79,23 +78,23 @@ function closeModal() {
           type="button"
           title="Close Modal (Esc)"
           onclick={closeModal}
-          class="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
+          class="w-6.5 h-6.5 rounded-lg flex items-center justify-center bg-rose-500 hover:bg-rose-600 active:bg-rose-700 text-white transition-colors cursor-pointer shadow-md shadow-rose-500/10"
         >
-          <Icon name="close" size={14} />
+          <Icon name="close" size={12} />
         </button>
       </div>
 
-      <!-- Modal Body -->
-      <div class="p-5 overflow-y-auto flex-1 text-sm text-slate-700 dark:text-slate-300">
+      <!-- Dialog Body -->
+      <div class="p-6 overflow-y-auto flex-1 text-xs text-[#d9d9d9] font-sans">
         {#if children}
           {@render children()}
         {/if}
       </div>
 
-      <!-- Modal Footer (Optional) -->
+      <!-- Dialog Footer -->
       {#if footer}
         <div
-          class="flex items-center justify-end gap-2.5 px-5 py-3.5 border-t border-slate-200 dark:border-white/[0.06] bg-slate-50/80 dark:bg-[#08090d]"
+          class="flex items-center justify-end gap-2.5 px-6 py-4 border-t border-[#25272b] bg-[#141517]"
         >
           {@render footer()}
         </div>

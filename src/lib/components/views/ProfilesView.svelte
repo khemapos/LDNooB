@@ -3,6 +3,8 @@ import { emulatorsStore } from "$lib/stores/emulators.svelte";
 import type { Emulator } from "$lib/types";
 import BaseTable, { type ColumnConfig } from "../common/BaseTable.svelte";
 import ConfirmDialog from "../common/ConfirmDialog.svelte";
+import CustomButton from "../common/CustomButton.svelte";
+import CustomInput from "../common/CustomInput.svelte";
 import AdbTerminalModal from "../modals/AdbTerminalModal.svelte";
 import AddEmulatorModal from "../modals/AddEmulatorModal.svelte";
 import BulkRenameModal from "../modals/BulkRenameModal.svelte";
@@ -63,56 +65,58 @@ function openModify(emu: Emulator) {
     <!-- Left: Batch Operations -->
     <div class="flex items-center gap-2">
       <!-- Primary New Instance Button (Brand Green) -->
-      <button
-        type="button"
+      <CustomButton
+        variant="primary"
+        size="md"
         onclick={() => (showAddModal = true)}
-        class="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-[#00b578] to-[#009963] hover:from-[#00c985] hover:to-[#00a86d] transition-all shadow-[0_2px_10px_rgba(0,181,120,0.3)] cursor-pointer"
       >
         <Icon name="plus" size={14} />
         <span>New LDPlayer</span>
-      </button>
+      </CustomButton>
 
       <div class="h-4 w-px bg-[#25272b] mx-1"></div>
 
       <!-- Batch Actions -->
-      <button
-        type="button"
+      <CustomButton
+        variant="secondary"
+        size="sm"
         disabled={emulatorsStore.selectedIndices.length === 0}
         onclick={() => emulatorsStore.batchLaunch()}
-        class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#00b578]/10 text-[#00b578] border border-[#00b578]/25 hover:bg-[#00b578]/20 transition-colors disabled:opacity-40 cursor-pointer"
+        class="text-[#00b578] hover:text-[#00b578]"
       >
         <Icon name="play" size={12} />
         <span>Start ({emulatorsStore.selectedIndices.length})</span>
-      </button>
+      </CustomButton>
 
-      <button
-        type="button"
+      <CustomButton
+        variant="secondary"
+        size="sm"
         disabled={emulatorsStore.selectedIndices.length === 0}
         onclick={() => emulatorsStore.batchQuit()}
-        class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#ff4d4f]/10 text-[#ff4d4f] border border-[#ff4d4f]/25 hover:bg-[#ff4d4f]/20 transition-colors disabled:opacity-40 cursor-pointer"
+        class="text-[#ff4d4f] hover:text-[#ff4d4f]"
       >
         <Icon name="stop" size={12} />
         <span>Close ({emulatorsStore.selectedIndices.length})</span>
-      </button>
+      </CustomButton>
 
-      <button
-        type="button"
+      <CustomButton
+        variant="secondary"
+        size="sm"
         disabled={emulatorsStore.selectedIndices.length === 0}
         onclick={() => (showBulkRenameModal = true)}
-        class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#18191c] text-[#d9d9d9] border border-[#25272b] hover:bg-[#1f2125] transition-colors disabled:opacity-40 cursor-pointer"
       >
         <Icon name="edit" size={12} />
         <span>Rename</span>
-      </button>
+      </CustomButton>
 
-      <button
-        type="button"
+      <CustomButton
+        variant="secondary"
+        size="sm"
         onclick={() => emulatorsStore.sortWindows()}
-        class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#18191c] text-[#d9d9d9] border border-[#25272b] hover:bg-[#1f2125] transition-colors cursor-pointer"
       >
         <Icon name="sort" size={12} />
         <span>Arrange Windows</span>
-      </button>
+      </CustomButton>
     </div>
 
     <!-- Right: Filter & Search Controls -->
@@ -154,33 +158,27 @@ function openModify(emu: Emulator) {
       </div>
 
       <!-- Search Input -->
-      <div class="relative w-48">
-        <Icon
-          name="search"
-          size={13}
-          class="absolute left-3 top-2.5 text-[#8c8c8c]"
-        />
-        <input
-          type="text"
+      <div class="w-48">
+        <CustomInput
           placeholder="Search emulators..."
           bind:value={emulatorsStore.searchQuery}
-          class="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl bg-[#0e0f11] border border-[#25272b] text-white placeholder-[#8c8c8c] focus:outline-none focus:border-[#00b578] shadow-inner font-sans"
+          icon="search"
         />
       </div>
 
       <!-- Refresh Button -->
-      <button
-        type="button"
+      <CustomButton
+        variant="icon"
+        size="icon"
         title="Refresh Fleet"
         onclick={() => emulatorsStore.refresh()}
-        class="p-2 rounded-xl text-[#8c8c8c] hover:text-[#00b578] hover:bg-[#18191c] border border-[#25272b] transition-colors cursor-pointer"
       >
         <Icon
           name="refresh"
           size={14}
           class={emulatorsStore.isLoading ? "animate-spin" : ""}
         />
-      </button>
+      </CustomButton>
     </div>
   </div>
 
@@ -289,23 +287,23 @@ function openModify(emu: Emulator) {
                 >
                   <Icon name="terminal" size={13} />
                 </button>
-                <button
-                  type="button"
+                <CustomButton
+                  variant="danger"
+                  size="xs"
                   title="Stop Emulator"
                   onclick={() => emulatorsStore.quit(item.index)}
-                  class="px-2.5 py-1 text-xs font-bold rounded-lg bg-[#ff4d4f]/10 text-[#ff4d4f] border border-[#ff4d4f]/25 hover:bg-[#ff4d4f]/20 transition-colors cursor-pointer"
                 >
                   Stop
-                </button>
+                </CustomButton>
               {:else}
-                <button
-                  type="button"
+                <CustomButton
+                  variant="success"
+                  size="xs"
                   title="Start Emulator"
                   onclick={() => emulatorsStore.launch(item.index)}
-                  class="px-2.5 py-1 text-xs font-bold rounded-lg bg-[#00b578]/10 text-[#00b578] border border-[#00b578]/25 hover:bg-[#00b578]/20 transition-colors cursor-pointer"
                 >
                   Start
-                </button>
+                </CustomButton>
               {/if}
 
               <!-- Modify Settings Gear -->

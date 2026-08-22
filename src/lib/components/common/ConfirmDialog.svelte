@@ -1,6 +1,6 @@
 <script lang="ts">
-import Icon from "../ui/Icon.svelte";
 import BaseModal from "./BaseModal.svelte";
+import CustomButton from "./CustomButton.svelte";
 
 interface Props {
   open: boolean;
@@ -25,43 +25,41 @@ let {
 }: Props = $props();
 
 function handleConfirm() {
-  onConfirm();
   open = false;
+  onConfirm();
 }
 
 function handleCancel() {
-  onCancel?.();
   open = false;
+  onCancel?.();
 }
 </script>
 
 <BaseModal
   bind:open
   {title}
-  icon="alert"
+  icon={isDestructive ? "trash" : "cube"}
   maxWidth="max-w-md"
-  onClose={handleCancel}
 >
-  <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+  <p class="text-xs text-[#d9d9d9] font-sans leading-relaxed">
     {message}
   </p>
 
   {#snippet footer()}
-    <button
-      type="button"
+    <CustomButton
+      variant="secondary"
+      size="md"
       onclick={handleCancel}
-      class="px-4 py-2 text-xs font-semibold rounded-xl text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-white/[0.06] hover:bg-slate-200 dark:hover:bg-white/[0.12] transition-colors cursor-pointer"
     >
       {cancelText}
-    </button>
-    <button
-      type="button"
+    </CustomButton>
+
+    <CustomButton
+      variant={isDestructive ? "danger" : "primary"}
+      size="md"
       onclick={handleConfirm}
-      class="px-4 py-2 text-xs font-semibold rounded-xl text-white transition-all shadow-sm cursor-pointer {isDestructive
-        ? 'bg-rose-600 hover:bg-rose-500 shadow-rose-600/20'
-        : 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 shadow-cyan-500/20'}"
     >
       {confirmText}
-    </button>
+    </CustomButton>
   {/snippet}
 </BaseModal>

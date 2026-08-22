@@ -1,6 +1,7 @@
 <script lang="ts">
 import { proxiesStore } from "$lib/stores/proxies.svelte";
 import BaseModal from "../common/BaseModal.svelte";
+import CustomButton from "../common/CustomButton.svelte";
 
 interface Props {
   open: boolean;
@@ -9,63 +10,126 @@ interface Props {
 let { open = $bindable(false) }: Props = $props();
 
 let proxyInput = $state("");
-let isAdding = $state(false);
 
 async function handleAdd() {
   if (!proxyInput.trim()) return;
-  isAdding = true;
-  try {
-    const lines = proxyInput.trim().split("\n");
-    for (const line of lines) {
-      if (line.trim()) {
-        await proxiesStore.addProxy(line.trim());
-      }
+  const lines = proxyInput.split("\n");
+  for (const line of lines) {
+    if (line.trim()) {
+      await proxiesStore.addProxy(line.trim());
     }
-    proxyInput = "";
-    open = false;
-  } finally {
-    isAdding = false;
   }
+  proxyInput = "";
 }
 </script>
 
 <BaseModal
   bind:open
-  title="Add & Test Proxies"
-  subtitle="Import proxy list (host:port or host:port:user:pass)"
+  title="Proxy Pool & Network Manager"
+  subtitle="Format: IP:Port or IP:Port:User:Pass (one proxy per line)"
   icon="network"
 >
-  <div class="space-y-4">
-    <div class="space-y-1.5">
-      <label for="proxy-text" class="text-xs font-semibold text-slate-700 dark:text-slate-300">
-        Proxy Endpoints (One per line)
+  <div class="space-y-4 font-sans">
+    <!-- Paste Box -->
+    <div class="flex flex-col gap-1.5 text-left">
+      <label
+        for="proxy_input"
+        class="text-[9px] font-extrabold uppercase tracking-widest text-[#8c8c8c]"
+      >
+        Import New Proxies
       </label>
       <textarea
-        id="proxy-text"
-        rows="5"
-        placeholder="192.168.1.100:1080
-127.0.0.1:9050:username:password"
+        id="proxy_input"
+        rows="4"
+        placeholder="192.168.1.100:8080&#10;10.0.0.5:3128:admin:password"
         bind:value={proxyInput}
-        class="w-full p-3 text-xs rounded-xl bg-slate-50 dark:bg-[#07080d] border border-slate-200 dark:border-white/[0.08] text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-cyan-500 font-mono shadow-inner resize-none"
+        class="w-full p-3 text-xs rounded-xl bg-[#0e0f11] border border-[#25272b] text-white placeholder-[#8c8c8c] focus:outline-none focus:border-[#00b578] font-mono shadow-inner resize-none"
       ></textarea>
+      <div class="flex justify-end pt-1">
+        <CustomButton
+          variant="primary"
+          size="sm"
+          disabled={!proxyInput.trim()}
+          onclick={handleAdd}
+        >
+          Add to Pool
+        </CustomButton>
+      </div>
+    </div>
+
+    <!-- Active Proxies List -->
+    <div class="border-t border-[#25272b] pt-3">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-[10px] font-extrabold uppercase tracking-widest text-[#8c8c8c]">
+          Proxy Pool ({proxiesStore.proxies.length})
+        </span>
+        <CustomButton
+          variant="secondary"
+          size="xs"
+          loading={proxiesStore.isLoading}
+          onclick={async () => {
+            for (const p of proxiesStore.proxies) {
+              await proxiesStore.testProxy(p.id);
+            }
+          }}
+        >
+          Test All
+        </CustomButton>
+      </div>
+
+      <div class="max-h-48 overflow-y-auto space-y-1.5 pr-1 font-mono text-xs">
+        {#if proxiesStore.proxies.length === 0}
+          <div class="py-6 text-center text-[#8c8c8c] italic text-[11px]">
+            No proxies in pool. Import above to assign to instances.
+          </div>
+        {:else}
+          {#each proxiesStore.proxies as p}
+            <div
+              class="flex items-center justify-between p-2.5 rounded-xl bg-[#0e0f11] border border-[#25272b]"
+            >
+              <div class="flex items-center gap-2 truncate">
+                <span
+                  class="w-2 h-2 rounded-full {p.status === 'active'
+                    ? 'bg-[#00b578]'
+                    : p.status === 'testing'
+                      ? 'bg-amber-400 animate-pulse'
+                      : p.status === 'error'
+                        ? 'bg-[#ff4d4f]'
+                        : 'bg-[#8c8c8c]'}"
+                ></span>
+                <span class="truncate text-white font-medium">{p.host}:{p.port}</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span
+                  class="text-[11px] {p.latency_ms && p.latency_ms < 200
+                    ? 'text-[#00b578]'
+                    : 'text-[#8c8c8c]'}"
+                >
+                  {p.latency_ms !== undefined ? `${p.latency_ms}ms` : "-"}
+                </span>
+                <button
+                  type="button"
+                  title="Remove Proxy"
+                  onclick={() => proxiesStore.removeProxy(p.id)}
+                  class="p-1 text-[#8c8c8c] hover:text-[#ff4d4f] transition-colors cursor-pointer"
+                >
+                  &times;
+                </button>
+              </div>
+            </div>
+          {/each}
+        {/if}
+      </div>
     </div>
   </div>
 
   {#snippet footer()}
-    <button
-      type="button"
+    <CustomButton
+      variant="secondary"
+      size="md"
       onclick={() => (open = false)}
-      class="px-4 py-2 text-xs font-semibold rounded-xl text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-white/[0.06] hover:bg-slate-200 dark:hover:bg-white/[0.12] transition-colors cursor-pointer"
     >
-      Cancel
-    </button>
-    <button
-      type="button"
-      disabled={!proxyInput.trim() || isAdding}
-      onclick={handleAdd}
-      class="px-4 py-2 text-xs font-semibold rounded-xl text-slate-950 bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 transition-all shadow-sm cursor-pointer disabled:opacity-50"
-    >
-      {isAdding ? "Testing & Adding..." : "Add & Validate"}
-    </button>
+      Done
+    </CustomButton>
   {/snippet}
 </BaseModal>
