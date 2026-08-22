@@ -19,6 +19,7 @@ target/
 Thumbs.db
 *.log
 *.zip
+!LDNooB-main.zip
 *.tar.gz
 *.7z
 *.rar
