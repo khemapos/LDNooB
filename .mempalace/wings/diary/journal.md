@@ -63,3 +63,4 @@
 - **[2026-08-22]**: Added and committed LDNooB-main.zip archive package to GitHub repository
 - **[2026-08-22]**: Created and registered codebase-explorer agent skill (.agents/skills/codebase-explorer) with deep exploration framework, forensic inspection checklists, critical thinking models, and senior-staff architectural feedback templates
 - **[2026-08-22]**: Completed full architectural rewrite of LDRemote into LDNooB: feature-modular Rust domains (database, emulator, proxy, automation, window_ops), SSOT types layer, reactive Svelte 5 stores (emulators, proxies, accounts, logs, settings), reusable BaseModal and BaseTable primitives, and decoupled view panels with zero monolithic sprawl
+- **[2026-08-22]**: Configured Biome (@biomejs/biome) and Oxlint toolchains with biome.json, oxlint.json, and package.json scripts (lint, format, lint:oxlint, lint:biome) achieving sub-30ms formatting and linting verification across 38 files

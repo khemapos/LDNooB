@@ -1,15 +1,15 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-  import "../app.css";
-  import WindowBar from "$lib/components/layout/WindowBar.svelte";
-  import BottomBar from "$lib/components/layout/BottomBar.svelte";
-  import { themeStore } from "$lib/stores/theme.svelte";
+import { onMount } from "svelte";
+import "../app.css";
+import BottomBar from "$lib/components/layout/BottomBar.svelte";
+import WindowBar from "$lib/components/layout/WindowBar.svelte";
+import { themeStore } from "$lib/stores/theme.svelte";
 
-  let { children } = $props();
+let { children } = $props();
 
-  onMount(() => {
-    themeStore.init();
-  });
+onMount(() => {
+  themeStore.init();
+});
 </script>
 
 <div class="h-screen w-screen flex flex-col overflow-hidden bg-slate-50 dark:bg-[#08090d] text-slate-900 dark:text-slate-100 select-none transition-colors duration-150 font-sans antialiased">

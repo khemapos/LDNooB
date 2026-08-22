@@ -1,38 +1,38 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-  import Icon from "../ui/Icon.svelte";
-  import { themeStore } from "$lib/stores/theme.svelte";
-  import { windowStore } from "$lib/stores/window.svelte";
+import { onMount } from "svelte";
+import { themeStore } from "$lib/stores/theme.svelte";
+import { windowStore } from "$lib/stores/window.svelte";
+import Icon from "../ui/Icon.svelte";
 
-  interface Props {
-    title?: string;
-  }
+interface Props {
+  title?: string;
+}
 
-  let { title = "LDNooB" }: Props = $props();
+let { title = "LDNooB" }: Props = $props();
 
-  onMount(() => {
-    windowStore.init();
-  });
+onMount(() => {
+  windowStore.init();
+});
 
-  function handleMinimize(event?: MouseEvent) {
-    event?.stopPropagation();
-    windowStore.minimize();
-  }
+function handleMinimize(event?: MouseEvent) {
+  event?.stopPropagation();
+  windowStore.minimize();
+}
 
-  function handleToggleMaximize(event?: MouseEvent) {
-    event?.stopPropagation();
-    windowStore.toggleMaximize();
-  }
+function handleToggleMaximize(event?: MouseEvent) {
+  event?.stopPropagation();
+  windowStore.toggleMaximize();
+}
 
-  function handleClose(event?: MouseEvent) {
-    event?.stopPropagation();
-    windowStore.close();
-  }
+function handleClose(event?: MouseEvent) {
+  event?.stopPropagation();
+  windowStore.close();
+}
 
-  function toggleTheme(event?: MouseEvent) {
-    event?.stopPropagation();
-    themeStore.toggle();
-  }
+function toggleTheme(event?: MouseEvent) {
+  event?.stopPropagation();
+  themeStore.toggle();
+}
 </script>
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->

@@ -1,16 +1,16 @@
 <script lang="ts">
-  import Icon from "../ui/Icon.svelte";
-  import { logsStore } from "$lib/stores/logs.svelte";
+import { logsStore } from "$lib/stores/logs.svelte";
+import Icon from "../ui/Icon.svelte";
 
-  let isCollapsed = $state(false);
-  let selectedLevel = $state<string>("all");
+let isCollapsed = $state(false);
+let selectedLevel = $state<string>("all");
 
-  let filteredLogs = $derived(
-    logsStore.entries.filter((entry) => {
-      if (selectedLevel === "all") return true;
-      return entry.level === selectedLevel;
-    })
-  );
+let filteredLogs = $derived(
+  logsStore.entries.filter((entry) => {
+    if (selectedLevel === "all") return true;
+    return entry.level === selectedLevel;
+  })
+);
 </script>
 
 <div

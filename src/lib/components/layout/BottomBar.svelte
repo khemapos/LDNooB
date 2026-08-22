@@ -1,12 +1,12 @@
 <script lang="ts">
-  import Icon from "../ui/Icon.svelte";
-  import { windowStore } from "$lib/stores/window.svelte";
+import { windowStore } from "$lib/stores/window.svelte";
+import Icon from "../ui/Icon.svelte";
 
-  interface Props {
-    status?: string;
-  }
+interface Props {
+  status?: string;
+}
 
-  let { status = "Ready" }: Props = $props();
+let { status = "Ready" }: Props = $props();
 </script>
 
 <footer

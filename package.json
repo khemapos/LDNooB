@@ -1,7 +1,7 @@
 {
   "name": "ldnoob",
   "version": "0.1.0",
-  "description": "",
+  "description": "High-performance desktop control plane for LDPlayer and Android emulator fleets",
   "type": "module",
   "scripts": {
     "dev": "vite dev",
@@ -9,6 +9,10 @@
     "preview": "vite preview",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+    "lint:oxlint": "oxlint",
+    "lint:biome": "biome check .",
+    "lint": "oxlint && biome check .",
+    "format": "biome format --write .",
     "tauri": "tauri"
   },
   "license": "MIT",
@@ -17,11 +21,13 @@
     "@tauri-apps/plugin-opener": "^2"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.5.10",
     "@sveltejs/adapter-static": "^3.0.6",
     "@sveltejs/kit": "^2.9.0",
     "@sveltejs/vite-plugin-svelte": "^5.0.0",
     "@tailwindcss/vite": "^4.3.3",
     "@tauri-apps/cli": "^2",
+    "oxlint": "^1.79.0",
     "svelte": "^5.0.0",
     "svelte-check": "^4.0.0",
     "tailwindcss": "^4.3.3",

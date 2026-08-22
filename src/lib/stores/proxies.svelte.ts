@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
-import type { ProxyRecord, ProxyCheckResult } from "$lib/types";
+import type { ProxyCheckResult, ProxyRecord } from "$lib/types";
 import { logsStore } from "./logs.svelte";
 
 class ProxiesStore {

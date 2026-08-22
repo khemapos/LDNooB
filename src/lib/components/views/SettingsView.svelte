@@ -1,34 +1,34 @@
 <script lang="ts">
-  import Icon from "../ui/Icon.svelte";
-  import { settingsStore } from "$lib/stores/settings.svelte";
-  import { invoke } from "@tauri-apps/api/core";
-  import { logsStore } from "$lib/stores/logs.svelte";
+import { invoke } from "@tauri-apps/api/core";
+import { logsStore } from "$lib/stores/logs.svelte";
+import { settingsStore } from "$lib/stores/settings.svelte";
+import Icon from "../ui/Icon.svelte";
 
-  let ldPath = $state(settingsStore.settings.ldplayerPath);
-  let isDetecting = $state(false);
-  let isSaved = $state(false);
+let ldPath = $state(settingsStore.settings.ldplayerPath);
+let isDetecting = $state(false);
+let isSaved = $state(false);
 
-  async function handleAutoDetect() {
-    isDetecting = true;
-    try {
-      const detected = await invoke<string | null>("auto_detect_ldplayer");
-      if (detected) {
-        ldPath = detected;
-        logsStore.success("Settings", `Auto-detected LDPlayer at: ${detected}`);
-      } else {
-        logsStore.warn("Settings", "LDPlayer installation could not be auto-detected");
-      }
-    } finally {
-      isDetecting = false;
+async function handleAutoDetect() {
+  isDetecting = true;
+  try {
+    const detected = await invoke<string | null>("auto_detect_ldplayer");
+    if (detected) {
+      ldPath = detected;
+      logsStore.success("Settings", `Auto-detected LDPlayer at: ${detected}`);
+    } else {
+      logsStore.warn("Settings", "LDPlayer installation could not be auto-detected");
     }
+  } finally {
+    isDetecting = false;
   }
+}
 
-  async function handleSave() {
-    await settingsStore.save({ ldplayerPath: ldPath });
-    isSaved = true;
-    logsStore.success("Settings", "Saved settings to local database");
-    setTimeout(() => (isSaved = false), 2000);
-  }
+async function handleSave() {
+  await settingsStore.save({ ldplayerPath: ldPath });
+  isSaved = true;
+  logsStore.success("Settings", "Saved settings to local database");
+  setTimeout(() => (isSaved = false), 2000);
+}
 </script>
 
 <div class="flex-1 flex flex-col h-full gap-4 overflow-y-auto max-w-2xl">

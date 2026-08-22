@@ -1,39 +1,39 @@
 <script lang="ts">
-  import Icon from "../ui/Icon.svelte";
+import Icon from "../ui/Icon.svelte";
 
-  interface Props {
-    open: boolean;
-    title: string;
-    subtitle?: string;
-    icon?: any;
-    maxWidth?: string;
-    onClose?: () => void;
-    children?: any;
-    footer?: any;
+interface Props {
+  open: boolean;
+  title: string;
+  subtitle?: string;
+  icon?: any;
+  maxWidth?: string;
+  onClose?: () => void;
+  children?: any;
+  footer?: any;
+}
+
+let {
+  open = $bindable(false),
+  title,
+  subtitle,
+  icon,
+  maxWidth = "max-w-xl",
+  onClose,
+  children,
+  footer,
+}: Props = $props();
+
+function handleKeydown(e: KeyboardEvent) {
+  if (open && e.key === "Escape") {
+    e.preventDefault();
+    closeModal();
   }
+}
 
-  let {
-    open = $bindable(false),
-    title,
-    subtitle,
-    icon,
-    maxWidth = "max-w-xl",
-    onClose,
-    children,
-    footer,
-  }: Props = $props();
-
-  function handleKeydown(e: KeyboardEvent) {
-    if (open && e.key === "Escape") {
-      e.preventDefault();
-      closeModal();
-    }
-  }
-
-  function closeModal() {
-    open = false;
-    onClose?.();
-  }
+function closeModal() {
+  open = false;
+  onClose?.();
+}
 </script>
 
 <svelte:window onkeydown={handleKeydown} />

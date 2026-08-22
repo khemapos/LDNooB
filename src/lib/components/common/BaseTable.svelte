@@ -1,41 +1,37 @@
 <script lang="ts">
-  import Icon from "../ui/Icon.svelte";
+import Icon from "../ui/Icon.svelte";
 
-  export interface TableColumn {
-    key: string;
-    label: string;
-    width?: string;
-    align?: "left" | "center" | "right";
-  }
+export interface TableColumn {
+  key: string;
+  label: string;
+  width?: string;
+  align?: "left" | "center" | "right";
+}
 
-  interface Props {
-    columns: TableColumn[];
-    items: any[];
-    selectedKeys?: any[];
-    itemKey?: string;
-    onSelectAll?: () => void;
-    onToggleSelect?: (key: any) => void;
-    onRowClick?: (item: any) => void;
-    rowSnippet?: any;
-  }
+interface Props {
+  columns: TableColumn[];
+  items: any[];
+  selectedKeys?: any[];
+  itemKey?: string;
+  onSelectAll?: () => void;
+  onToggleSelect?: (key: any) => void;
+  onRowClick?: (item: any) => void;
+  rowSnippet?: any;
+}
 
-  let {
-    columns,
-    items,
-    selectedKeys = [],
-    itemKey = "index",
-    onSelectAll,
-    onToggleSelect,
-    onRowClick,
-    rowSnippet,
-  }: Props = $props();
+let {
+  columns,
+  items,
+  selectedKeys = [],
+  itemKey = "index",
+  onSelectAll,
+  onToggleSelect,
+  onRowClick,
+  rowSnippet,
+}: Props = $props();
 
-  let allSelected = $derived(
-    items.length > 0 && selectedKeys.length === items.length
-  );
-  let someSelected = $derived(
-    selectedKeys.length > 0 && selectedKeys.length < items.length
-  );
+let allSelected = $derived(items.length > 0 && selectedKeys.length === items.length);
+let someSelected = $derived(selectedKeys.length > 0 && selectedKeys.length < items.length);
 </script>
 
 <div

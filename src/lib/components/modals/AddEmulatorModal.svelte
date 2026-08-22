@@ -1,39 +1,39 @@
 <script lang="ts">
-  import BaseModal from "../common/BaseModal.svelte";
-  import { emulatorsStore } from "$lib/stores/emulators.svelte";
+import { emulatorsStore } from "$lib/stores/emulators.svelte";
+import BaseModal from "../common/BaseModal.svelte";
 
-  interface Props {
-    open: boolean;
-  }
+interface Props {
+  open: boolean;
+}
 
-  let { open = $bindable(false) }: Props = $props();
+let { open = $bindable(false) }: Props = $props();
 
-  let name = $state("");
-  let count = $state(1);
-  let isCloning = $state(false);
-  let cloneFromIndex = $state<number>(0);
-  let isSubmitting = $state(false);
+let name = $state("");
+let count = $state(1);
+let isCloning = $state(false);
+let cloneFromIndex = $state<number>(0);
+let isSubmitting = $state(false);
 
-  async function handleCreate() {
-    if (!name.trim()) return;
-    isSubmitting = true;
-    try {
-      if (isCloning) {
-        await emulatorsStore.copyInstance(name.trim(), cloneFromIndex);
-      } else {
-        for (let i = 0; i < count; i++) {
-          const instanceName = count > 1 ? `${name.trim()}_${i + 1}` : name.trim();
-          await emulatorsStore.addInstance(instanceName);
-        }
+async function handleCreate() {
+  if (!name.trim()) return;
+  isSubmitting = true;
+  try {
+    if (isCloning) {
+      await emulatorsStore.copyInstance(name.trim(), cloneFromIndex);
+    } else {
+      for (let i = 0; i < count; i++) {
+        const instanceName = count > 1 ? `${name.trim()}_${i + 1}` : name.trim();
+        await emulatorsStore.addInstance(instanceName);
       }
-      open = false;
-      name = "";
-      count = 1;
-      isCloning = false;
-    } finally {
-      isSubmitting = false;
     }
+    open = false;
+    name = "";
+    count = 1;
+    isCloning = false;
+  } finally {
+    isSubmitting = false;
   }
+}
 </script>
 
 <BaseModal

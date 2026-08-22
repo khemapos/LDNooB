@@ -1,46 +1,46 @@
 <script lang="ts">
-  import Icon from "../ui/Icon.svelte";
-  import BaseTable, { type TableColumn } from "../common/BaseTable.svelte";
-  import ConfirmDialog from "../common/ConfirmDialog.svelte";
-  import AddEmulatorModal from "../modals/AddEmulatorModal.svelte";
-  import BulkRenameModal from "../modals/BulkRenameModal.svelte";
-  import AdbTerminalModal from "../modals/AdbTerminalModal.svelte";
-  import { emulatorsStore } from "$lib/stores/emulators.svelte";
-  import type { Emulator } from "$lib/types";
+import { emulatorsStore } from "$lib/stores/emulators.svelte";
+import type { Emulator } from "$lib/types";
+import BaseTable, { type TableColumn } from "../common/BaseTable.svelte";
+import ConfirmDialog from "../common/ConfirmDialog.svelte";
+import AdbTerminalModal from "../modals/AdbTerminalModal.svelte";
+import AddEmulatorModal from "../modals/AddEmulatorModal.svelte";
+import BulkRenameModal from "../modals/BulkRenameModal.svelte";
+import Icon from "../ui/Icon.svelte";
 
-  let showAddModal = $state(false);
-  let showBulkRenameModal = $state(false);
-  let showAdbModal = $state(false);
-  let adbTargetIndex = $state(0);
+let showAddModal = $state(false);
+let showBulkRenameModal = $state(false);
+let showAdbModal = $state(false);
+let adbTargetIndex = $state(0);
 
-  let showDeleteConfirm = $state(false);
-  let deleteTargetIndex = $state<number | null>(null);
+let showDeleteConfirm = $state(false);
+let deleteTargetIndex = $state<number | null>(null);
 
-  const columns: TableColumn[] = [
-    { key: "index", label: "Index", width: "w-16", align: "center" },
-    { key: "name", label: "Instance Name", width: "w-44" },
-    { key: "status", label: "Status", width: "w-24", align: "center" },
-    { key: "pid", label: "PID", width: "w-20", align: "center" },
-    { key: "model", label: "Device Model", width: "w-36" },
-    { key: "actions", label: "Actions", width: "w-48", align: "right" },
-  ];
+const columns: TableColumn[] = [
+  { key: "index", label: "Index", width: "w-16", align: "center" },
+  { key: "name", label: "Instance Name", width: "w-44" },
+  { key: "status", label: "Status", width: "w-24", align: "center" },
+  { key: "pid", label: "PID", width: "w-20", align: "center" },
+  { key: "model", label: "Device Model", width: "w-36" },
+  { key: "actions", label: "Actions", width: "w-48", align: "right" },
+];
 
-  function promptDelete(index: number) {
-    deleteTargetIndex = index;
-    showDeleteConfirm = true;
+function promptDelete(index: number) {
+  deleteTargetIndex = index;
+  showDeleteConfirm = true;
+}
+
+function confirmDelete() {
+  if (deleteTargetIndex !== null) {
+    emulatorsStore.deleteInstance(deleteTargetIndex);
+    deleteTargetIndex = null;
   }
+}
 
-  function confirmDelete() {
-    if (deleteTargetIndex !== null) {
-      emulatorsStore.deleteInstance(deleteTargetIndex);
-      deleteTargetIndex = null;
-    }
-  }
-
-  function openAdb(index: number) {
-    adbTargetIndex = index;
-    showAdbModal = true;
-  }
+function openAdb(index: number) {
+  adbTargetIndex = index;
+  showAdbModal = true;
+}
 </script>
 
 <div class="flex-1 flex flex-col h-full gap-3 overflow-hidden">

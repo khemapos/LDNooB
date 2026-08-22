@@ -1,21 +1,21 @@
 <script lang="ts">
-  import Icon from "../ui/Icon.svelte";
-  import type { ActiveTab } from "$lib/types";
+import type { ActiveTab } from "$lib/types";
+import Icon from "../ui/Icon.svelte";
 
-  interface Props {
-    activeTab: ActiveTab;
-    onTabChange: (tab: ActiveTab) => void;
-  }
+interface Props {
+  activeTab: ActiveTab;
+  onTabChange: (tab: ActiveTab) => void;
+}
 
-  let { activeTab = $bindable("profiles"), onTabChange }: Props = $props();
+let { activeTab = $bindable("profiles"), onTabChange }: Props = $props();
 
-  const tabs: { id: ActiveTab; label: string; icon: any }[] = [
-    { id: "profiles", label: "Emulators", icon: "cube" },
-    { id: "accounts", label: "Accounts", icon: "users" },
-    { id: "workflows", label: "Workflows", icon: "sparkles" },
-    { id: "inspector", label: "Inspector", icon: "eye" },
-    { id: "settings", label: "Settings", icon: "settings" },
-  ];
+const tabs: { id: ActiveTab; label: string; icon: any }[] = [
+  { id: "profiles", label: "Emulators", icon: "cube" },
+  { id: "accounts", label: "Accounts", icon: "users" },
+  { id: "workflows", label: "Workflows", icon: "sparkles" },
+  { id: "inspector", label: "Inspector", icon: "eye" },
+  { id: "settings", label: "Settings", icon: "settings" },
+];
 </script>
 
 <div

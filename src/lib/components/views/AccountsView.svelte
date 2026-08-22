@@ -1,30 +1,30 @@
 <script lang="ts">
-  import Icon from "../ui/Icon.svelte";
-  import BaseTable, { type TableColumn } from "../common/BaseTable.svelte";
-  import BaseModal from "../common/BaseModal.svelte";
-  import ProxyInjectModal from "../modals/ProxyInjectModal.svelte";
-  import { accountsStore } from "$lib/stores/accounts.svelte";
-  import { proxiesStore } from "$lib/stores/proxies.svelte";
-  import type { FacebookAccount } from "$lib/types";
+import { accountsStore } from "$lib/stores/accounts.svelte";
+import { proxiesStore } from "$lib/stores/proxies.svelte";
+import type { FacebookAccount } from "$lib/types";
+import BaseModal from "../common/BaseModal.svelte";
+import BaseTable, { type TableColumn } from "../common/BaseTable.svelte";
+import ProxyInjectModal from "../modals/ProxyInjectModal.svelte";
+import Icon from "../ui/Icon.svelte";
 
-  let showImportModal = $state(false);
-  let showProxyModal = $state(false);
-  let importInput = $state("");
+let showImportModal = $state(false);
+let showProxyModal = $state(false);
+let importInput = $state("");
 
-  const columns: TableColumn[] = [
-    { key: "uid", label: "UID / Account ID", width: "w-40" },
-    { key: "status", label: "Status", width: "w-28", align: "center" },
-    { key: "proxy", label: "Proxy", width: "w-48" },
-    { key: "twoFA", label: "2FA Secret", width: "w-36" },
-    { key: "actions", label: "Actions", width: "w-24", align: "right" },
-  ];
+const columns: TableColumn[] = [
+  { key: "uid", label: "UID / Account ID", width: "w-40" },
+  { key: "status", label: "Status", width: "w-28", align: "center" },
+  { key: "proxy", label: "Proxy", width: "w-48" },
+  { key: "twoFA", label: "2FA Secret", width: "w-36" },
+  { key: "actions", label: "Actions", width: "w-24", align: "right" },
+];
 
-  function handleImport() {
-    if (!importInput.trim()) return;
-    accountsStore.batchImport(importInput.split("\n"));
-    importInput = "";
-    showImportModal = false;
-  }
+function handleImport() {
+  if (!importInput.trim()) return;
+  accountsStore.batchImport(importInput.split("\n"));
+  importInput = "";
+  showImportModal = false;
+}
 </script>
 
 <div class="flex-1 flex flex-col h-full gap-3 overflow-hidden">

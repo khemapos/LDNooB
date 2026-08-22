@@ -1,33 +1,33 @@
 <script lang="ts">
-  import Icon from "../ui/Icon.svelte";
-  import { emulatorsStore } from "$lib/stores/emulators.svelte";
-  import { invoke } from "@tauri-apps/api/core";
-  import { settingsStore } from "$lib/stores/settings.svelte";
-  import { logsStore } from "$lib/stores/logs.svelte";
+import { invoke } from "@tauri-apps/api/core";
+import { emulatorsStore } from "$lib/stores/emulators.svelte";
+import { logsStore } from "$lib/stores/logs.svelte";
+import { settingsStore } from "$lib/stores/settings.svelte";
+import Icon from "../ui/Icon.svelte";
 
-  let selectedIndex = $state<number>(0);
-  let rawXml = $state("");
-  let isDumping = $state(false);
+let selectedIndex = $state<number>(0);
+let rawXml = $state("");
+let isDumping = $state(false);
 
-  async function handleDump() {
-    isDumping = true;
-    try {
-      const path = settingsStore.settings.ldplayerPath;
-      const cmd = "uiautomator dump /data/local/tmp/uidump.xml && cat /data/local/tmp/uidump.xml";
-      const res = await invoke<string>("run_adb_command", {
-        ldplayerDir: path,
-        index: selectedIndex,
-        adbCommand: cmd,
-      });
-      rawXml = res || "(No UI dump returned)";
-      logsStore.success("Inspector", `Dumped UI hierarchy for instance #${selectedIndex}`);
-    } catch (e) {
-      rawXml = `Error dumping hierarchy: ${e}`;
-      logsStore.error("Inspector", `UI dump failed: ${e}`);
-    } finally {
-      isDumping = false;
-    }
+async function handleDump() {
+  isDumping = true;
+  try {
+    const path = settingsStore.settings.ldplayerPath;
+    const cmd = "uiautomator dump /data/local/tmp/uidump.xml && cat /data/local/tmp/uidump.xml";
+    const res = await invoke<string>("run_adb_command", {
+      ldplayerDir: path,
+      index: selectedIndex,
+      adbCommand: cmd,
+    });
+    rawXml = res || "(No UI dump returned)";
+    logsStore.success("Inspector", `Dumped UI hierarchy for instance #${selectedIndex}`);
+  } catch (e) {
+    rawXml = `Error dumping hierarchy: ${e}`;
+    logsStore.error("Inspector", `UI dump failed: ${e}`);
+  } finally {
+    isDumping = false;
   }
+}
 </script>
 
 <div class="flex-1 flex flex-col h-full gap-3 overflow-hidden">

@@ -1,5 +1,5 @@
-import { getCurrentWindow, LogicalSize } from "@tauri-apps/api/window";
 import { invoke } from "@tauri-apps/api/core";
+import { getCurrentWindow, LogicalSize } from "@tauri-apps/api/window";
 
 export interface WindowPreset {
   label: string;
@@ -12,7 +12,12 @@ export const WINDOW_PRESETS: WindowPreset[] = [
   { label: "Compact HD", width: 1024, height: 720, description: "Compact 1024 × 720 layout" },
   { label: "Standard WXGA", width: 1280, height: 800, description: "Standard 1280 × 800 layout" },
   { label: "Full HD", width: 1440, height: 900, description: "Spacious 1440 × 900 layout" },
-  { label: "Widescreen 1080p", width: 1920, height: 1080, description: "Maximum 1920 × 1080 layout" },
+  {
+    label: "Widescreen 1080p",
+    width: 1920,
+    height: 1080,
+    description: "Maximum 1920 × 1080 layout",
+  },
 ];
 
 class WindowStore {
@@ -34,11 +39,14 @@ class WindowStore {
 
     try {
       const win = getCurrentWindow();
-      win.isMaximized().then((val) => {
-        this.isMaximized = val;
-      }).catch(() => {
-        this.isTauri = false;
-      });
+      win
+        .isMaximized()
+        .then((val) => {
+          this.isMaximized = val;
+        })
+        .catch(() => {
+          this.isTauri = false;
+        });
 
       const unlisten = win.onResized(async () => {
         try {

@@ -1,39 +1,39 @@
 <script lang="ts">
-  import BaseModal from "../common/BaseModal.svelte";
-  import { invoke } from "@tauri-apps/api/core";
-  import { settingsStore } from "$lib/stores/settings.svelte";
-  import { logsStore } from "$lib/stores/logs.svelte";
+import { invoke } from "@tauri-apps/api/core";
+import { logsStore } from "$lib/stores/logs.svelte";
+import { settingsStore } from "$lib/stores/settings.svelte";
+import BaseModal from "../common/BaseModal.svelte";
 
-  interface Props {
-    open: boolean;
-    emulatorIndex?: number;
+interface Props {
+  open: boolean;
+  emulatorIndex?: number;
+}
+
+let { open = $bindable(false), emulatorIndex = 0 }: Props = $props();
+
+let command = $state("getprop ro.product.model");
+let output = $state("");
+let isRunning = $state(false);
+
+async function handleExecute() {
+  if (!command.trim()) return;
+  isRunning = true;
+  try {
+    const path = settingsStore.settings.ldplayerPath;
+    const res = await invoke<string>("run_adb_command", {
+      ldplayerDir: path,
+      index: emulatorIndex,
+      adbCommand: command.trim(),
+    });
+    output = res || "(Command completed with no output)";
+    logsStore.adb(`[Emulator #${emulatorIndex}] $ ${command}`);
+  } catch (e) {
+    output = `Error: ${e}`;
+    logsStore.error("ADB", `Failed to execute: ${e}`);
+  } finally {
+    isRunning = false;
   }
-
-  let { open = $bindable(false), emulatorIndex = 0 }: Props = $props();
-
-  let command = $state("getprop ro.product.model");
-  let output = $state("");
-  let isRunning = $state(false);
-
-  async function handleExecute() {
-    if (!command.trim()) return;
-    isRunning = true;
-    try {
-      const path = settingsStore.settings.ldplayerPath;
-      const res = await invoke<string>("run_adb_command", {
-        ldplayerDir: path,
-        index: emulatorIndex,
-        adbCommand: command.trim(),
-      });
-      output = res || "(Command completed with no output)";
-      logsStore.adb(`[Emulator #${emulatorIndex}] $ ${command}`);
-    } catch (e) {
-      output = `Error: ${e}`;
-      logsStore.error("ADB", `Failed to execute: ${e}`);
-    } finally {
-      isRunning = false;
-    }
-  }
+}
 </script>
 
 <BaseModal

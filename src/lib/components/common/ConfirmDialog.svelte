@@ -1,38 +1,38 @@
 <script lang="ts">
-  import BaseModal from "./BaseModal.svelte";
-  import Icon from "../ui/Icon.svelte";
+import Icon from "../ui/Icon.svelte";
+import BaseModal from "./BaseModal.svelte";
 
-  interface Props {
-    open: boolean;
-    title: string;
-    message: string;
-    confirmText?: string;
-    cancelText?: string;
-    isDestructive?: boolean;
-    onConfirm: () => void;
-    onCancel?: () => void;
-  }
+interface Props {
+  open: boolean;
+  title: string;
+  message: string;
+  confirmText?: string;
+  cancelText?: string;
+  isDestructive?: boolean;
+  onConfirm: () => void;
+  onCancel?: () => void;
+}
 
-  let {
-    open = $bindable(false),
-    title,
-    message,
-    confirmText = "Confirm",
-    cancelText = "Cancel",
-    isDestructive = false,
-    onConfirm,
-    onCancel,
-  }: Props = $props();
+let {
+  open = $bindable(false),
+  title,
+  message,
+  confirmText = "Confirm",
+  cancelText = "Cancel",
+  isDestructive = false,
+  onConfirm,
+  onCancel,
+}: Props = $props();
 
-  function handleConfirm() {
-    onConfirm();
-    open = false;
-  }
+function handleConfirm() {
+  onConfirm();
+  open = false;
+}
 
-  function handleCancel() {
-    onCancel?.();
-    open = false;
-  }
+function handleCancel() {
+  onCancel?.();
+  open = false;
+}
 </script>
 
 <BaseModal

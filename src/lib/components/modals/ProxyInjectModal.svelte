@@ -1,32 +1,32 @@
 <script lang="ts">
-  import BaseModal from "../common/BaseModal.svelte";
-  import { proxiesStore } from "$lib/stores/proxies.svelte";
+import { proxiesStore } from "$lib/stores/proxies.svelte";
+import BaseModal from "../common/BaseModal.svelte";
 
-  interface Props {
-    open: boolean;
-  }
+interface Props {
+  open: boolean;
+}
 
-  let { open = $bindable(false) }: Props = $props();
+let { open = $bindable(false) }: Props = $props();
 
-  let proxyInput = $state("");
-  let isAdding = $state(false);
+let proxyInput = $state("");
+let isAdding = $state(false);
 
-  async function handleAdd() {
-    if (!proxyInput.trim()) return;
-    isAdding = true;
-    try {
-      const lines = proxyInput.trim().split("\n");
-      for (const line of lines) {
-        if (line.trim()) {
-          await proxiesStore.addProxy(line.trim());
-        }
+async function handleAdd() {
+  if (!proxyInput.trim()) return;
+  isAdding = true;
+  try {
+    const lines = proxyInput.trim().split("\n");
+    for (const line of lines) {
+      if (line.trim()) {
+        await proxiesStore.addProxy(line.trim());
       }
-      proxyInput = "";
-      open = false;
-    } finally {
-      isAdding = false;
     }
+    proxyInput = "";
+    open = false;
+  } finally {
+    isAdding = false;
   }
+}
 </script>
 
 <BaseModal

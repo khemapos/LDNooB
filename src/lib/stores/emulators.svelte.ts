@@ -1,7 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import type { Emulator, EmulatorFilterStatus } from "$lib/types";
-import { settingsStore } from "./settings.svelte";
 import { logsStore } from "./logs.svelte";
+import { settingsStore } from "./settings.svelte";
 
 class EmulatorsStore {
   instances = $state<Emulator[]>([]);
@@ -31,12 +31,8 @@ class EmulatorsStore {
     })
   );
 
-  runningCount = $derived<number>(
-    this.instances.filter((i) => i.is_running).length
-  );
-  stoppedCount = $derived<number>(
-    this.instances.filter((i) => !i.is_running).length
-  );
+  runningCount = $derived<number>(this.instances.filter((i) => i.is_running).length);
+  stoppedCount = $derived<number>(this.instances.filter((i) => !i.is_running).length);
 
   async refresh() {
     this.isLoading = true;

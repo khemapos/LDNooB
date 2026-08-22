@@ -1,47 +1,47 @@
 <script lang="ts">
-  export type IconName =
-    | "cube"
-    | "search"
-    | "sun"
-    | "moon"
-    | "minimize"
-    | "maximize"
-    | "restore"
-    | "close"
-    | "command"
-    | "sparkles"
-    | "refresh"
-    | "play"
-    | "stop"
-    | "trash"
-    | "copy"
-    | "plus"
-    | "settings"
-    | "terminal"
-    | "network"
-    | "shield"
-    | "smartphone"
-    | "folder"
-    | "chevronDown"
-    | "chevronUp"
-    | "chevronRight"
-    | "edit"
-    | "filter"
-    | "check"
-    | "alert"
-    | "grid"
-    | "code"
-    | "eye"
-    | "users"
-    | "sort";
+export type IconName =
+  | "cube"
+  | "search"
+  | "sun"
+  | "moon"
+  | "minimize"
+  | "maximize"
+  | "restore"
+  | "close"
+  | "command"
+  | "sparkles"
+  | "refresh"
+  | "play"
+  | "stop"
+  | "trash"
+  | "copy"
+  | "plus"
+  | "settings"
+  | "terminal"
+  | "network"
+  | "shield"
+  | "smartphone"
+  | "folder"
+  | "chevronDown"
+  | "chevronUp"
+  | "chevronRight"
+  | "edit"
+  | "filter"
+  | "check"
+  | "alert"
+  | "grid"
+  | "code"
+  | "eye"
+  | "users"
+  | "sort";
 
-  interface Props {
-    name: IconName;
-    size?: number;
-    class?: string;
-  }
+interface Props {
+  name: IconName;
+  size?: number;
+  class?: string;
+}
 
-  let { name, size = 16, class: className = "" }: Props = $props();
+let { name, size = 16, class: className = "" }: Props = $props();
 </script>
 
 <svg

@@ -1,31 +1,31 @@
 <script lang="ts">
-  import BaseModal from "../common/BaseModal.svelte";
-  import { emulatorsStore } from "$lib/stores/emulators.svelte";
+import { emulatorsStore } from "$lib/stores/emulators.svelte";
+import BaseModal from "../common/BaseModal.svelte";
 
-  interface Props {
-    open: boolean;
-  }
+interface Props {
+  open: boolean;
+}
 
-  let { open = $bindable(false) }: Props = $props();
+let { open = $bindable(false) }: Props = $props();
 
-  let prefix = $state("Profile");
-  let startNumber = $state(1);
-  let isSubmitting = $state(false);
+let prefix = $state("Profile");
+let startNumber = $state(1);
+let isSubmitting = $state(false);
 
-  async function handleRename() {
-    isSubmitting = true;
-    try {
-      let current = startNumber;
-      for (const index of emulatorsStore.selectedIndices) {
-        const title = `${prefix}-${current}`;
-        await emulatorsStore.renameInstance(index, title);
-        current++;
-      }
-      open = false;
-    } finally {
-      isSubmitting = false;
+async function handleRename() {
+  isSubmitting = true;
+  try {
+    let current = startNumber;
+    for (const index of emulatorsStore.selectedIndices) {
+      const title = `${prefix}-${current}`;
+      await emulatorsStore.renameInstance(index, title);
+      current++;
     }
+    open = false;
+  } finally {
+    isSubmitting = false;
   }
+}
 </script>
 
 <BaseModal

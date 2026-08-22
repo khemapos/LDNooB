@@ -1,42 +1,42 @@
 <script lang="ts">
-  import Icon from "../ui/Icon.svelte";
-  import type { WorkflowStep } from "$lib/types";
-  import { logsStore } from "$lib/stores/logs.svelte";
+import { logsStore } from "$lib/stores/logs.svelte";
+import type { WorkflowStep } from "$lib/types";
+import Icon from "../ui/Icon.svelte";
 
-  let steps = $state<WorkflowStep[]>([
-    {
-      id: "step-1",
-      name: "Launch Target Application",
-      type: "start_app",
-      params: { packageName: "com.facebook.katana" },
-      enabled: true,
-    },
-    {
-      id: "step-2",
-      name: "Wait For Screen Load",
-      type: "delay",
-      params: { seconds: 3 },
-      enabled: true,
-    },
-    {
-      id: "step-3",
-      name: "Human Scroll Feed",
-      type: "human_swipe",
-      params: { x1: 360, y1: 900, x2: 360, y2: 300, duration: 400 },
-      enabled: true,
-    },
-  ]);
+let steps = $state<WorkflowStep[]>([
+  {
+    id: "step-1",
+    name: "Launch Target Application",
+    type: "start_app",
+    params: { packageName: "com.facebook.katana" },
+    enabled: true,
+  },
+  {
+    id: "step-2",
+    name: "Wait For Screen Load",
+    type: "delay",
+    params: { seconds: 3 },
+    enabled: true,
+  },
+  {
+    id: "step-3",
+    name: "Human Scroll Feed",
+    type: "human_swipe",
+    params: { x1: 360, y1: 900, x2: 360, y2: 300, duration: 400 },
+    enabled: true,
+  },
+]);
 
-  let isExecuting = $state(false);
+let isExecuting = $state(false);
 
-  function executeWorkflow() {
-    isExecuting = true;
-    logsStore.info("Workflow", "Started executing automated workflow steps");
-    setTimeout(() => {
-      isExecuting = false;
-      logsStore.success("Workflow", "Workflow execution completed successfully");
-    }, 2000);
-  }
+function executeWorkflow() {
+  isExecuting = true;
+  logsStore.info("Workflow", "Started executing automated workflow steps");
+  setTimeout(() => {
+    isExecuting = false;
+    logsStore.success("Workflow", "Workflow execution completed successfully");
+  }, 2000);
+}
 </script>
 
 <div class="flex-1 flex flex-col h-full gap-3 overflow-hidden">

@@ -1,0 +1,12 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "unicorn", "oxc"],
+  "categories": {
+    "correctness": "warn"
+  },
+  "rules": {
+    "no-unused-vars": "warn",
+    "no-explicit-any": "off"
+  },
+  "ignorePatterns": ["node_modules/**", ".svelte-kit/**", "build/**", "src-tauri/**", "dist/**"]
+}

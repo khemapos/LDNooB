@@ -1,22 +1,22 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-  import NavigationTabs from "$lib/components/layout/NavigationTabs.svelte";
-  import ProfilesView from "$lib/components/views/ProfilesView.svelte";
-  import AccountsView from "$lib/components/views/AccountsView.svelte";
-  import VisualWorkflowsView from "$lib/components/views/VisualWorkflowsView.svelte";
-  import HierarchyInspectorView from "$lib/components/views/HierarchyInspectorView.svelte";
-  import SettingsView from "$lib/components/views/SettingsView.svelte";
-  import ActivityLogPanel from "$lib/components/views/ActivityLogPanel.svelte";
-  import { emulatorsStore } from "$lib/stores/emulators.svelte";
-  import { settingsStore } from "$lib/stores/settings.svelte";
-  import type { ActiveTab } from "$lib/types";
+import { onMount } from "svelte";
+import NavigationTabs from "$lib/components/layout/NavigationTabs.svelte";
+import AccountsView from "$lib/components/views/AccountsView.svelte";
+import ActivityLogPanel from "$lib/components/views/ActivityLogPanel.svelte";
+import HierarchyInspectorView from "$lib/components/views/HierarchyInspectorView.svelte";
+import ProfilesView from "$lib/components/views/ProfilesView.svelte";
+import SettingsView from "$lib/components/views/SettingsView.svelte";
+import VisualWorkflowsView from "$lib/components/views/VisualWorkflowsView.svelte";
+import { emulatorsStore } from "$lib/stores/emulators.svelte";
+import { settingsStore } from "$lib/stores/settings.svelte";
+import type { ActiveTab } from "$lib/types";
 
-  let activeTab = $state<ActiveTab>("profiles");
+let activeTab = $state<ActiveTab>("profiles");
 
-  onMount(async () => {
-    await settingsStore.init();
-    await emulatorsStore.refresh();
-  });
+onMount(async () => {
+  await settingsStore.init();
+  await emulatorsStore.refresh();
+});
 </script>
 
 <main class="flex-1 w-full h-full flex flex-col p-4 gap-3 overflow-hidden select-none">

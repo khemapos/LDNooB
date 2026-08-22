@@ -3,10 +3,6 @@ export type Theme = "dark" | "light";
 class ThemeStore {
   current = $state<Theme>("dark");
 
-  constructor() {
-    // Initial sync will happen onMount in browser
-  }
-
   init() {
     if (typeof window === "undefined") return;
 

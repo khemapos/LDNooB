@@ -115,6 +115,10 @@ Ensure you have the following installed on your system:
 | `bun run dev` | Starts the Vite development server on `http://localhost:1420` |
 | `bun run build` | Builds the static SvelteKit frontend bundle to `build/` |
 | `bun run preview` | Previews the production frontend build locally |
+| `bun run lint` | Runs ultra-fast static analysis with **Oxlint** & **Biome** |
+| `bun run format` | Auto-formats the entire codebase with **Biome** (< 30ms) |
+| `bun run lint:oxlint` | Runs pure Rust **Oxlint** rules across the codebase |
+| `bun run lint:biome` | Runs **Biome** linter and import organizer |
 | `bun run check` | Runs SvelteKit type checks and Svelte diagnostics (`svelte-check`) |
 | `bun run tauri dev` | Starts the full Tauri v2 desktop application with live reload |
 | `bun run tauri build` | Compiles the production desktop installer and executable |
