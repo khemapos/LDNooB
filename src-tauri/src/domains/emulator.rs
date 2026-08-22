@@ -521,53 +521,103 @@ pub async fn sort_windows(
 
 #[cfg(target_os = "windows")]
 unsafe extern "system" fn collect_matching_windows(hwnd: isize, context: isize) -> i32 {
-    use windows_sys::Win32::UI::WindowsAndMessaging::{GetWindowTextLengthW, GetWindowTextW};
+    use windows_sys::Win32::UI::WindowsAndMessaging::{
+        GetClassNameW, GetWindowTextLengthW, GetWindowTextW,
+    };
 
     let request = &mut *(context as *mut (Vec<String>, Vec<isize>));
+
+    // Check Class Name
+    let mut class_buffer = [0u16; 256];
+    let class_len = GetClassNameW(hwnd, class_buffer.as_mut_ptr(), class_buffer.len() as i32);
+    let class_name = if class_len > 0 {
+        String::from_utf16_lossy(&class_buffer[..class_len as usize])
+    } else {
+        String::new()
+    };
+
+    // Check Window Title
     let title_length = GetWindowTextLengthW(hwnd);
-    if title_length <= 0 {
-        return 1;
-    }
-    let mut title_buffer = vec![0u16; title_length as usize + 1];
-    let copied = GetWindowTextW(hwnd, title_buffer.as_mut_ptr(), title_buffer.len() as i32);
-    if copied <= 0 {
-        return 1;
-    }
-    let title = String::from_utf16_lossy(&title_buffer[..copied as usize]);
-    if request
-        .0
-        .iter()
-        .any(|name| !name.is_empty() && title.contains(name))
-    {
+    let title = if title_length > 0 {
+        let mut title_buffer = vec![0u16; title_length as usize + 1];
+        let copied = GetWindowTextW(hwnd, title_buffer.as_mut_ptr(), title_buffer.len() as i32);
+        if copied > 0 {
+            String::from_utf16_lossy(&title_buffer[..copied as usize])
+        } else {
+            String::new()
+        }
+    } else {
+        String::new()
+    };
+
+    let is_ldplayer_class = class_name.contains("LDPlayer")
+        || class_name.contains("RenderWindow")
+        || class_name.contains("subWin");
+
+    let is_matching_title = request.0.iter().any(|name| {
+        if name.is_empty() {
+            return false;
+        }
+        title.contains(name)
+            || title.starts_with("LDPlayer")
+            || name.starts_with(&title)
+    }) || title.starts_with("LDPlayer");
+
+    if (is_matching_title || is_ldplayer_class) && !request.1.contains(&hwnd) {
         request.1.push(hwnd);
     }
     1
 }
 
 #[tauri::command]
-pub async fn toggle_emulators_visibility(running_names: Vec<String>) -> Result<bool, String> {
+pub async fn toggle_emulators_visibility(
+    running_names: Option<Vec<String>>,
+    hwnds: Option<Vec<String>>,
+) -> Result<bool, String> {
     #[cfg(target_os = "windows")]
     {
         use windows_sys::Win32::UI::WindowsAndMessaging::{
-            EnumWindows, IsWindowVisible, ShowWindow, SW_HIDE, SW_RESTORE,
+            EnumWindows, IsWindow, IsWindowVisible, ShowWindow, SW_HIDE, SW_RESTORE,
         };
 
-        let mut request = (running_names, Vec::<isize>::new());
+        let mut target_hwnds: Vec<isize> = Vec::new();
+
+        // 1. Direct HWND lookup
+        if let Some(handles) = hwnds {
+            for raw in handles {
+                if let Ok(hwnd) = parse_hwnd(&raw) {
+                    if unsafe { IsWindow(hwnd) } != 0 && !target_hwnds.contains(&hwnd) {
+                        target_hwnds.push(hwnd);
+                    }
+                }
+            }
+        }
+
+        // 2. Enumerated windows by name/class
+        let names = running_names.unwrap_or_default();
+        let mut request = (names, Vec::<isize>::new());
         unsafe {
             EnumWindows(
                 Some(collect_matching_windows),
                 &mut request as *mut (Vec<String>, Vec<isize>) as isize,
             );
         }
-        if request.1.is_empty() {
+
+        for h in request.1 {
+            if !target_hwnds.contains(&h) {
+                target_hwnds.push(h);
+            }
+        }
+
+        if target_hwnds.is_empty() {
             return Err("No running emulator windows were found".to_string());
         }
 
-        let should_hide = request
-            .1
+        let should_hide = target_hwnds
             .iter()
-            .any(|hwnd| unsafe { IsWindowVisible(*hwnd) } != 0);
-        for hwnd in request.1 {
+            .any(|&hwnd| unsafe { IsWindowVisible(hwnd) } != 0);
+
+        for hwnd in target_hwnds {
             unsafe {
                 ShowWindow(hwnd, if should_hide { SW_HIDE } else { SW_RESTORE });
             }
@@ -576,7 +626,7 @@ pub async fn toggle_emulators_visibility(running_names: Vec<String>) -> Result<b
     }
     #[cfg(not(target_os = "windows"))]
     {
-        let _ = running_names;
+        let _ = (running_names, hwnds);
         Err("Window visibility controls are only supported on Windows".to_string())
     }
 }

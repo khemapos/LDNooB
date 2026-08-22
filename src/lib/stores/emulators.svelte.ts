@@ -185,6 +185,8 @@ class EmulatorsStore {
     }
   }
 
+  isEmulatorsHidden = $state(false);
+
   async toggleVisibility() {
     try {
       const running = this.instances.filter((i) => i.is_running);
@@ -193,9 +195,13 @@ class EmulatorsStore {
         return;
       }
       const runningNames = running.map((i) => i.name);
+      const hwnds = running.map((i) => i.top_hwnd).filter((h) => !!h && h !== "0" && h !== "-1");
+
       const isHidden = await invoke<boolean>("toggle_emulators_visibility", {
         runningNames,
+        hwnds,
       });
+      this.isEmulatorsHidden = isHidden;
       logsStore.info(
         "Windows",
         isHidden ? "Hidden emulator windows" : "Restored emulator windows to screen"

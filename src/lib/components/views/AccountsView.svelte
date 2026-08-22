@@ -190,10 +190,17 @@ function handleStopTasks() {
       <button
         type="button"
         onclick={() => emulatorsStore.toggleVisibility()}
-        title="Toggle Show/Hide Running Emulators"
-        class="w-8.5 h-8.5 rounded-xl border border-[#00b578]/40 hover:border-[#00b578] bg-[#00b578]/10 hover:bg-[#00b578]/20 flex items-center justify-center text-[#00b578] transition-all cursor-pointer active:scale-95 shadow-xs"
+        title={emulatorsStore.isEmulatorsHidden
+          ? "Show/Restore Running Emulators"
+          : "Hide Running Emulators"}
+        class="w-8.5 h-8.5 rounded-xl border flex items-center justify-center transition-all cursor-pointer active:scale-95 shadow-xs {emulatorsStore.isEmulatorsHidden
+          ? 'border-[#ff4d4f]/50 bg-[#ff4d4f]/15 text-[#ff4d4f]'
+          : 'border-[#00b578]/40 hover:border-[#00b578] bg-[#00b578]/10 hover:bg-[#00b578]/20 text-[#00b578]'}"
       >
-        <Icon name="eye" size={15} />
+        <Icon
+          name={emulatorsStore.isEmulatorsHidden ? "eyeOff" : "eye"}
+          size={15}
+        />
       </button>
     </div>
 
