@@ -157,7 +157,7 @@ function changePageSize(size: number) {
   isPageSizeOpen = false;
 }
 
-// Selection Computes
+// Selection Computes & Multi-Select Engine
 let isAllPageSelected = $derived(
   paginatedItems.length > 0 && paginatedItems.every((item) => selectedKeys.includes(item[itemKey]))
 );
@@ -165,6 +165,10 @@ let isAllPageSelected = $derived(
 let isSomePageSelected = $derived(
   paginatedItems.some((item) => selectedKeys.includes(item[itemKey])) && !isAllPageSelected
 );
+
+let lastClickedIndex = $state<number | null>(null);
+let isDragging = $state(false);
+let dragAnchorIndex = $state<number | null>(null);
 
 function toggleSelectAll() {
   if (isAllPageSelected) {
@@ -188,6 +192,85 @@ function toggleSelect(key: any) {
     selectedKeys = [...selectedKeys, key];
   }
   onUpdateSelectedKeys?.(selectedKeys);
+}
+
+function handleRowClick(e: MouseEvent, item: any, index: number) {
+  onRowClick?.(item, e);
+
+  // Avoid triggering row click if clicking on an interactive element (button, input, select, link)
+  const target = e.target as HTMLElement | null;
+  if (
+    target &&
+    (target.tagName === "BUTTON" ||
+      target.tagName === "INPUT" ||
+      target.tagName === "SELECT" ||
+      target.tagName === "A" ||
+      target.closest("button") ||
+      target.closest("input") ||
+      target.closest("select"))
+  ) {
+    return;
+  }
+
+  const itemKeyVal = item[itemKey];
+  const isMeta = e.ctrlKey || e.metaKey;
+  const isShift = e.shiftKey;
+
+  if (isShift && lastClickedIndex !== null) {
+    e.preventDefault();
+    const start = Math.min(lastClickedIndex, index);
+    const end = Math.max(lastClickedIndex, index);
+    const rangeKeys = paginatedItems.slice(start, end + 1).map((p) => p[itemKey]);
+
+    if (isMeta) {
+      selectedKeys = Array.from(new Set([...selectedKeys, ...rangeKeys]));
+    } else {
+      selectedKeys = rangeKeys;
+    }
+  } else if (isMeta) {
+    toggleSelect(itemKeyVal);
+    lastClickedIndex = index;
+  } else {
+    toggleSelect(itemKeyVal);
+    lastClickedIndex = index;
+  }
+  onUpdateSelectedKeys?.(selectedKeys);
+}
+
+function handleRowMouseDown(e: MouseEvent, item: any, index: number) {
+  onRowMouseDown?.(item, e);
+
+  // Only handle left clicks without modifier keys for drag select
+  if (e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey) return;
+
+  const target = e.target as HTMLElement | null;
+  if (target && (target.closest("button") || target.closest("input") || target.closest("select"))) {
+    return;
+  }
+
+  const itemKeyVal = item[itemKey];
+  isDragging = true;
+  dragAnchorIndex = index;
+  lastClickedIndex = index;
+
+  function handleDragEnd() {
+    isDragging = false;
+    dragAnchorIndex = null;
+    window.removeEventListener("mouseup", handleDragEnd);
+  }
+
+  window.addEventListener("mouseup", handleDragEnd);
+}
+
+function handleRowMouseEnter(item: any, index: number) {
+  onRowMouseEnter?.(item, new MouseEvent("mouseenter"));
+
+  if (isDragging && dragAnchorIndex !== null) {
+    const start = Math.min(dragAnchorIndex, index);
+    const end = Math.max(dragAnchorIndex, index);
+    selectedKeys = paginatedItems.slice(start, end + 1).map((p) => p[itemKey]);
+    onUpdateSelectedKeys?.(selectedKeys);
+  }
 }
 
 // Column Resizing Logic
@@ -359,9 +442,9 @@ function toggleColumnVisibility(key: string) {
               class="h-10 transition-colors duration-150 group cursor-default {isSelected
                 ? 'bg-[color-mix(in_srgb,#00b578_12%,var(--color-bg-panel))] hover:bg-[color-mix(in_srgb,#00b578_16%,var(--color-bg-panel))]'
                 : 'hover:bg-bg-card-hover/40'}"
-              onclick={(e) => onRowClick?.(item, e)}
-              onmousedown={(e) => onRowMouseDown?.(item, e)}
-              onmouseenter={(e) => onRowMouseEnter?.(item, e)}
+              onclick={(e) => handleRowClick(e, item, index)}
+              onmousedown={(e) => handleRowMouseDown(e, item, index)}
+              onmouseenter={() => handleRowMouseEnter(item, index)}
               oncontextmenu={(e) => onRowContextMenu?.(item, e)}
             >
               <!-- Checkbox Cell with Selection Indicator -->
