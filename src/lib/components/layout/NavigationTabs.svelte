@@ -20,27 +20,27 @@ const tabs: { id: ActiveTab; label: string; icon: any; badge?: number }[] = $der
 ]);
 </script>
 
-<div class="w-full flex items-center justify-between gap-3 select-none">
+<div class="w-full flex items-center justify-between gap-3 select-none font-sans">
   <!-- Left: Main Navigation Tabs -->
   <div
-    class="flex items-center gap-1.5 p-1 bg-slate-200/60 dark:bg-white/[0.04] border border-slate-300/70 dark:border-white/[0.06] rounded-xl shadow-xs"
+    class="flex items-center gap-1.5 p-1 bg-bg-panel border border-border-default rounded-xl shadow-xs"
   >
     {#each tabs as tab}
       <button
         type="button"
         onclick={() => onTabChange(tab.id)}
-        class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-150 cursor-pointer {activeTab ===
+        class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all duration-150 cursor-pointer {activeTab ===
         tab.id
-          ? 'bg-white dark:bg-[#161824] text-emerald-600 dark:text-emerald-400 shadow-xs border border-slate-200 dark:border-white/[0.08]'
-          : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-white/40 dark:hover:bg-white/[0.03]'}"
+          ? 'bg-bg-card text-[#00b578] shadow-xs border border-border-default'
+          : 'text-text-muted hover:text-text-hover hover:bg-bg-card-hover border border-transparent'}"
       >
         <Icon name={tab.icon} size={14} />
         <span>{tab.label}</span>
         {#if tab.badge !== undefined && tab.badge > 0}
           <span
             class="px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold {activeTab === tab.id
-              ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400'
-              : 'bg-slate-200 dark:bg-white/10 text-slate-500 dark:text-slate-400'}"
+              ? 'bg-[#00b578]/20 text-[#00b578]'
+              : 'bg-bg-card text-text-muted'}"
           >
             {tab.badge}
           </span>
@@ -53,14 +53,14 @@ const tabs: { id: ActiveTab; label: string; icon: any; badge?: number }[] = $der
   <div class="flex items-center gap-2">
     <!-- Live Running Metrics Pill -->
     <div
-      class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-[#0c0e15] border border-slate-200 dark:border-white/[0.06] text-xs font-mono"
+      class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-bg-panel border border-border-default text-xs font-mono"
     >
-      <span class="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-bold">
-        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+      <span class="flex items-center gap-1.5 text-[#00b578] font-bold">
+        <span class="w-2 h-2 rounded-full bg-[#00b578] animate-pulse"></span>
         {emulatorsStore.runningCount} Running
       </span>
-      <span class="text-slate-300 dark:text-slate-600">•</span>
-      <span class="text-slate-500 dark:text-slate-400">
+      <span class="text-text-muted">•</span>
+      <span class="text-text-muted">
         {emulatorsStore.runningCount * 2048} MB RAM
       </span>
     </div>
@@ -68,9 +68,9 @@ const tabs: { id: ActiveTab; label: string; icon: any; badge?: number }[] = $der
     <!-- Theme Mode Toggle -->
     <button
       type="button"
-      title="Toggle Light/Dark Theme"
+      title="Toggle Light/Dark Theme ({themeStore.current})"
       onclick={() => themeStore.toggle()}
-      class="p-2 rounded-xl text-slate-500 dark:text-slate-400 hover:text-amber-500 dark:hover:text-amber-300 hover:bg-slate-100 dark:hover:bg-white/[0.06] border border-slate-200 dark:border-white/[0.06] transition-colors cursor-pointer"
+      class="p-2 rounded-xl text-text-muted hover:text-[#ffc107] hover:bg-bg-card border border-border-default transition-colors cursor-pointer"
     >
       <Icon name={themeStore.current === "dark" ? "sun" : "moon"} size={14} />
     </button>

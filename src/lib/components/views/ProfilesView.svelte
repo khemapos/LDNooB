@@ -60,7 +60,7 @@ function openModify(emu: Emulator) {
 <div class="flex-1 flex flex-col h-full gap-3 overflow-hidden font-sans">
   <!-- Top Command Toolbar -->
   <div
-    class="flex flex-wrap items-center justify-between gap-3 p-3 bg-[#141517] border border-[#25272b] rounded-2xl shadow-xs"
+    class="flex flex-wrap items-center justify-between gap-3 p-3 bg-bg-panel border border-border-default rounded-2xl shadow-xs"
   >
     <!-- Left: Batch Operations -->
     <div class="flex items-center gap-2">
@@ -74,7 +74,7 @@ function openModify(emu: Emulator) {
         <span>New LDPlayer</span>
       </CustomButton>
 
-      <div class="h-4 w-px bg-[#25272b] mx-1"></div>
+      <div class="h-4 w-px bg-border-default mx-1"></div>
 
       <!-- Batch Actions -->
       <CustomButton
@@ -123,15 +123,15 @@ function openModify(emu: Emulator) {
     <div class="flex items-center gap-2.5">
       <!-- Status Segmented Control -->
       <div
-        class="flex items-center p-0.5 bg-[#0e0f11] border border-[#25272b] rounded-xl text-xs font-semibold"
+        class="flex items-center p-0.5 bg-bg-app border border-border-default rounded-xl text-xs font-semibold"
       >
         <button
           type="button"
           onclick={() => (emulatorsStore.filterStatus = "all")}
           class="px-2.5 py-1 rounded-lg transition-all cursor-pointer {emulatorsStore.filterStatus ===
           'all'
-            ? 'bg-[#18191c] text-[#00b578] shadow-xs'
-            : 'text-[#8c8c8c] hover:text-white'}"
+            ? 'bg-bg-card text-[#00b578] shadow-xs'
+            : 'text-text-muted hover:text-text-hover'}"
         >
           All ({emulatorsStore.instances.length})
         </button>
@@ -140,8 +140,8 @@ function openModify(emu: Emulator) {
           onclick={() => (emulatorsStore.filterStatus = "running")}
           class="px-2.5 py-1 rounded-lg transition-all cursor-pointer {emulatorsStore.filterStatus ===
           'running'
-            ? 'bg-[#18191c] text-[#00b578] shadow-xs'
-            : 'text-[#8c8c8c] hover:text-white'}"
+            ? 'bg-bg-card text-[#00b578] shadow-xs'
+            : 'text-text-muted hover:text-text-hover'}"
         >
           Running ({emulatorsStore.runningCount})
         </button>
@@ -150,8 +150,8 @@ function openModify(emu: Emulator) {
           onclick={() => (emulatorsStore.filterStatus = "stopped")}
           class="px-2.5 py-1 rounded-lg transition-all cursor-pointer {emulatorsStore.filterStatus ===
           'stopped'
-            ? 'bg-[#18191c] text-[#d9d9d9] shadow-xs'
-            : 'text-[#8c8c8c] hover:text-white'}"
+            ? 'bg-bg-card text-text-default shadow-xs'
+            : 'text-text-muted hover:text-text-hover'}"
         >
           Stopped ({emulatorsStore.stoppedCount})
         </button>
@@ -194,7 +194,7 @@ function openModify(emu: Emulator) {
         <!-- No./ID -->
         {#if columns.find((c) => c.key === "index")?.visible}
           <td
-            class="py-2.5 px-3 text-center font-mono font-bold text-[#8c8c8c] border-r border-[#25272b]/20"
+            class="py-2.5 px-3 text-center font-mono font-bold text-text-muted border-r border-border-default/20"
           >
             #{item.index}
           </td>
@@ -203,10 +203,10 @@ function openModify(emu: Emulator) {
         <!-- Engine -->
         {#if columns.find((c) => c.key === "hostEmulator")?.visible}
           <td
-            class="py-2.5 px-3 text-xs text-[#d9d9d9] border-r border-[#25272b]/20"
+            class="py-2.5 px-3 text-xs text-text-default border-r border-border-default/20"
           >
             <span
-              class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-[#18191c] border border-[#25272b] text-[11px] font-medium text-[#8c8c8c]"
+              class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-bg-card border border-border-default text-[11px] font-medium text-text-muted"
             >
               LDPlayer 9
             </span>
@@ -216,7 +216,7 @@ function openModify(emu: Emulator) {
         <!-- Name -->
         {#if columns.find((c) => c.key === "name")?.visible}
           <td
-            class="py-2.5 px-3 font-bold text-white border-r border-[#25272b]/20"
+            class="py-2.5 px-3 font-bold text-text-hover border-r border-border-default/20"
           >
             {item.name}
           </td>
@@ -225,7 +225,7 @@ function openModify(emu: Emulator) {
         <!-- Status -->
         {#if columns.find((c) => c.key === "status")?.visible}
           <td
-            class="py-2.5 px-3 text-center border-r border-[#25272b]/20"
+            class="py-2.5 px-3 text-center border-r border-border-default/20"
           >
             {#if item.is_running}
               <span
@@ -236,7 +236,7 @@ function openModify(emu: Emulator) {
               </span>
             {:else}
               <span
-                class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#18191c] text-[#8c8c8c] border border-[#25272b]"
+                class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-bg-card text-text-muted border border-border-default"
               >
                 Stopped
               </span>
@@ -247,7 +247,7 @@ function openModify(emu: Emulator) {
         <!-- Resolution & DPI -->
         {#if columns.find((c) => c.key === "resolution")?.visible}
           <td
-            class="py-2.5 px-3 font-mono text-[11px] text-[#8c8c8c] border-r border-[#25272b]/20"
+            class="py-2.5 px-3 font-mono text-[11px] text-text-muted border-r border-border-default/20"
           >
             {item.width} × {item.height} ({item.dpi} DPI)
           </td>
@@ -256,7 +256,7 @@ function openModify(emu: Emulator) {
         <!-- Device Model -->
         {#if columns.find((c) => c.key === "model")?.visible}
           <td
-            class="py-2.5 px-3 text-[#d9d9d9] text-xs border-r border-[#25272b]/20"
+            class="py-2.5 px-3 text-text-default text-xs border-r border-border-default/20"
           >
             {item.brand} {item.model}
           </td>
@@ -265,7 +265,7 @@ function openModify(emu: Emulator) {
         <!-- Proxy -->
         {#if columns.find((c) => c.key === "proxy")?.visible}
           <td
-            class="py-2.5 px-3 font-mono text-[11px] text-[#8c8c8c] border-r border-[#25272b]/20"
+            class="py-2.5 px-3 font-mono text-[11px] text-text-muted border-r border-border-default/20"
           >
             {item.proxy || "Direct (No Proxy)"}
           </td>
@@ -274,7 +274,7 @@ function openModify(emu: Emulator) {
         <!-- CPU / RAM -->
         {#if columns.find((c) => c.key === "metrics")?.visible}
           <td
-            class="py-2.5 px-3 font-mono text-[11px] text-[#8c8c8c] border-r border-[#25272b]/20"
+            class="py-2.5 px-3 font-mono text-[11px] text-text-muted border-r border-border-default/20"
           >
             2 Cores • 2048 MB
           </td>
@@ -283,7 +283,7 @@ function openModify(emu: Emulator) {
         <!-- PID -->
         {#if columns.find((c) => c.key === "pid")?.visible}
           <td
-            class="py-2.5 px-3 text-center font-mono text-[#8c8c8c] border-r border-[#25272b]/20"
+            class="py-2.5 px-3 text-center font-mono text-text-muted border-r border-border-default/20"
           >
             {item.pid > 0 ? item.pid : "-"}
           </td>
@@ -295,8 +295,8 @@ function openModify(emu: Emulator) {
           <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
           <td
             class="py-2.5 px-3 text-right sticky right-0 z-10 shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.25)] group-hover:z-30 focus-within:z-30 {isSelected
-              ? 'bg-[color-mix(in_srgb,#00b578_12%,#141517)] group-hover:bg-[color-mix(in_srgb,#00b578_12%,#1f2125)]'
-              : 'bg-[#141517] group-hover:bg-[#1f2125]'}"
+              ? 'bg-[color-mix(in_srgb,#00b578_12%,var(--color-bg-panel))] group-hover:bg-[color-mix(in_srgb,#00b578_12%,var(--color-bg-card-hover))]'
+              : 'bg-bg-panel group-hover:bg-bg-card-hover'}"
             onclick={(e) => e.stopPropagation()}
             onmousedown={(e) => e.stopPropagation()}
           >
@@ -306,7 +306,7 @@ function openModify(emu: Emulator) {
                   type="button"
                   title="Open ADB Terminal"
                   onclick={() => openAdb(item.index)}
-                  class="p-1.5 rounded-lg text-[#8c8c8c] hover:text-[#00b578] hover:bg-[#18191c] transition-colors cursor-pointer"
+                  class="p-1.5 rounded-lg text-text-muted hover:text-[#00b578] hover:bg-bg-card transition-colors cursor-pointer"
                 >
                   <Icon name="terminal" size={13} />
                 </button>
@@ -334,7 +334,7 @@ function openModify(emu: Emulator) {
                 type="button"
                 title="Modify Instance Settings"
                 onclick={() => openModify(item)}
-                class="p-1.5 rounded-lg text-[#8c8c8c] hover:text-white hover:bg-[#18191c] transition-colors cursor-pointer"
+                class="p-1.5 rounded-lg text-text-muted hover:text-text-hover hover:bg-bg-card transition-colors cursor-pointer"
               >
                 <Icon name="settings" size={13} />
               </button>
@@ -344,7 +344,7 @@ function openModify(emu: Emulator) {
                 type="button"
                 title="Delete Instance"
                 onclick={() => promptDelete(item.index)}
-                class="p-1.5 rounded-lg text-[#8c8c8c] hover:text-[#ff4d4f] hover:bg-[#ff4d4f]/10 transition-colors cursor-pointer"
+                class="p-1.5 rounded-lg text-text-muted hover:text-[#ff4d4f] hover:bg-[#ff4d4f]/10 transition-colors cursor-pointer"
               >
                 <Icon name="trash" size={13} />
               </button>

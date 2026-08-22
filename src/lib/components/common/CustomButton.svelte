@@ -55,13 +55,13 @@ let variantClass = $derived(
     danger:
       "bg-[#ff4d4f] hover:bg-[#ff7875] text-white font-bold border border-white/10 shadow-[0_2px_10px_rgba(255,77,79,0.25)] active:scale-[0.98]",
     secondary:
-      "bg-[#18191c] hover:bg-[#1f2125] text-[#d9d9d9] hover:text-white border border-[#25272b] hover:border-[#33363c] shadow-xs active:scale-[0.98]",
+      "bg-bg-card hover:bg-bg-card-hover text-text-muted hover:text-text-hover border border-border-default hover:border-border-hover shadow-xs active:scale-[0.98]",
     ghost:
-      "bg-transparent hover:bg-[#1f2125] text-[#8c8c8c] hover:text-white border border-transparent",
+      "bg-transparent hover:bg-bg-card-hover text-text-muted hover:text-text-hover border border-transparent",
     outline:
-      "border border-[#25272b] hover:border-[#33363c] bg-transparent text-[#8c8c8c] hover:text-white hover:bg-[#18191c]",
+      "border border-border-default hover:border-border-hover bg-transparent text-text-muted hover:text-text-hover hover:bg-bg-card",
     link: "text-[#00b578] hover:underline bg-transparent p-0 border-none font-semibold",
-    icon: "bg-[#18191c] hover:bg-[#1f2125] text-[#8c8c8c] hover:text-white border border-[#25272b] rounded-xl flex items-center justify-center shrink-0",
+    icon: "bg-bg-card hover:bg-bg-card-hover text-text-muted hover:text-text-hover border border-border-default rounded-xl flex items-center justify-center shrink-0",
   }[variant]
 );
 

@@ -16,7 +16,6 @@ class ThemeStore {
 
     this.applyTheme();
 
-    // Listen for system theme changes if not overridden
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
     mediaQuery.addEventListener("change", (e) => {
       const saved = localStorage.getItem("ldnoob-theme");
@@ -47,10 +46,12 @@ class ThemeStore {
     if (typeof document === "undefined") return;
     const root = document.documentElement;
     if (this.current === "dark") {
-      root.classList.add("dark");
+      root.classList.add("dark", "theme-dark");
+      root.classList.remove("theme-light");
       root.setAttribute("data-theme", "dark");
     } else {
-      root.classList.remove("dark");
+      root.classList.remove("dark", "theme-dark");
+      root.classList.add("theme-light");
       root.setAttribute("data-theme", "light");
     }
   }

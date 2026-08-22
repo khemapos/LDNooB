@@ -35,7 +35,7 @@ function handleImport() {
 <div class="flex-1 flex flex-col h-full gap-3 overflow-hidden font-sans">
   <!-- Accounts Command Toolbar -->
   <div
-    class="flex flex-wrap items-center justify-between gap-3 p-3 bg-[#141517] border border-[#25272b] rounded-2xl shadow-xs"
+    class="flex flex-wrap items-center justify-between gap-3 p-3 bg-bg-panel border border-border-default rounded-2xl shadow-xs"
   >
     <div class="flex items-center gap-2">
       <!-- Import Accounts Button (Brand Blue) -->
@@ -58,8 +58,8 @@ function handleImport() {
       </CustomButton>
     </div>
 
-    <div class="text-xs font-mono text-[#8c8c8c]">
-      Total Accounts: <strong class="text-white">{accountsStore.accounts.length}</strong>
+    <div class="text-xs font-mono text-text-muted">
+      Total Accounts: <strong class="text-text-hover">{accountsStore.accounts.length}</strong>
     </div>
   </div>
 
@@ -75,7 +75,7 @@ function handleImport() {
         <!-- Index -->
         {#if columns.find((c) => c.key === "index")?.visible}
           <td
-            class="py-2.5 px-3 text-center font-mono font-bold text-[#8c8c8c] border-r border-[#25272b]/20"
+            class="py-2.5 px-3 text-center font-mono font-bold text-text-muted border-r border-border-default/20"
           >
             {index + 1}
           </td>
@@ -84,16 +84,16 @@ function handleImport() {
         <!-- Host Emulator -->
         {#if columns.find((c) => c.key === "hostEmulator")?.visible}
           <td
-            class="py-2.5 px-3 text-xs text-[#8c8c8c] border-r border-[#25272b]/20"
+            class="py-2.5 px-3 text-xs text-text-muted border-r border-border-default/20"
           >
             {#if item.emuIndex >= 0}
               <span
-                class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-[#18191c] text-[#00b578] font-mono text-[11px]"
+                class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-bg-card text-[#00b578] font-mono text-[11px] border border-border-default"
               >
                 #{item.emuIndex}
               </span>
             {:else}
-              <span class="text-[#8c8c8c] italic text-[11px]">Unassigned</span>
+              <span class="text-text-muted italic text-[11px]">Unassigned</span>
             {/if}
           </td>
         {/if}
@@ -101,7 +101,7 @@ function handleImport() {
         <!-- UID -->
         {#if columns.find((c) => c.key === "uid")?.visible}
           <td
-            class="py-2.5 px-3 font-mono font-bold text-white border-r border-[#25272b]/20"
+            class="py-2.5 px-3 font-mono font-bold text-text-hover border-r border-border-default/20"
           >
             {item.uid}
           </td>
@@ -110,7 +110,7 @@ function handleImport() {
         <!-- Profile Name -->
         {#if columns.find((c) => c.key === "profileName")?.visible}
           <td
-            class="py-2.5 px-3 text-[#d9d9d9] text-xs border-r border-[#25272b]/20"
+            class="py-2.5 px-3 text-text-default text-xs border-r border-border-default/20"
           >
             {item.username || "-"}
           </td>
@@ -119,7 +119,7 @@ function handleImport() {
         <!-- Password -->
         {#if columns.find((c) => c.key === "password")?.visible}
           <td
-            class="py-2.5 px-3 font-mono text-xs text-[#8c8c8c] border-r border-[#25272b]/20"
+            class="py-2.5 px-3 font-mono text-xs text-text-muted border-r border-border-default/20"
           >
             ••••••••
           </td>
@@ -128,7 +128,7 @@ function handleImport() {
         <!-- 2FA -->
         {#if columns.find((c) => c.key === "twoFA")?.visible}
           <td
-            class="py-2.5 px-3 font-mono text-xs text-[#8c8c8c] border-r border-[#25272b]/20"
+            class="py-2.5 px-3 font-mono text-xs text-text-muted border-r border-border-default/20"
           >
             {item.twoFA ? "••••••••" : "-"}
           </td>
@@ -137,7 +137,7 @@ function handleImport() {
         <!-- Proxy -->
         {#if columns.find((c) => c.key === "proxy")?.visible}
           <td
-            class="py-2.5 px-3 font-mono text-xs text-[#8c8c8c] border-r border-[#25272b]/20"
+            class="py-2.5 px-3 font-mono text-xs text-text-muted border-r border-border-default/20"
           >
             {item.proxy || "Direct"}
           </td>
@@ -146,7 +146,7 @@ function handleImport() {
         <!-- Status -->
         {#if columns.find((c) => c.key === "status")?.visible}
           <td
-            class="py-2.5 px-3 text-center border-r border-[#25272b]/20"
+            class="py-2.5 px-3 text-center border-r border-border-default/20"
           >
             <span
               class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#1877f2]/10 text-[#1877f2] border border-[#1877f2]/20"
@@ -162,8 +162,8 @@ function handleImport() {
           <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
           <td
             class="py-2.5 px-3 text-right sticky right-0 z-10 shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.25)] group-hover:z-30 focus-within:z-30 {isSelected
-              ? 'bg-[color-mix(in_srgb,#00b578_12%,#141517)] group-hover:bg-[color-mix(in_srgb,#00b578_12%,#1f2125)]'
-              : 'bg-[#141517] group-hover:bg-[#1f2125]'}"
+              ? 'bg-[color-mix(in_srgb,#00b578_12%,var(--color-bg-panel))] group-hover:bg-[color-mix(in_srgb,#00b578_12%,var(--color-bg-card-hover))]'
+              : 'bg-bg-panel group-hover:bg-bg-card-hover'}"
             onclick={(e) => e.stopPropagation()}
             onmousedown={(e) => e.stopPropagation()}
           >
@@ -171,7 +171,7 @@ function handleImport() {
               type="button"
               title="Delete Account"
               onclick={() => accountsStore.removeAccount(item.uid)}
-              class="p-1.5 rounded-lg text-[#8c8c8c] hover:text-[#ff4d4f] hover:bg-[#ff4d4f]/10 transition-colors cursor-pointer"
+              class="p-1.5 rounded-lg text-text-muted hover:text-[#ff4d4f] hover:bg-[#ff4d4f]/10 transition-colors cursor-pointer"
             >
               <Icon name="trash" size={13} />
             </button>
@@ -194,7 +194,7 @@ function handleImport() {
       rows="6"
       placeholder="1000847291029|MyPassword123|JBSWY3DPEHPK3PXP|sb=123..."
       bind:value={importInput}
-      class="w-full p-3 text-xs rounded-xl bg-[#0e0f11] border border-[#25272b] text-white placeholder-[#8c8c8c] focus:outline-none focus:border-[#1877f2] font-mono shadow-inner resize-none"
+      class="w-full p-3 text-xs rounded-xl bg-bg-card border border-border-default text-text-default placeholder:text-text-muted focus:outline-none focus:border-[#1877f2] font-mono shadow-inner resize-none"
     ></textarea>
   </div>
 

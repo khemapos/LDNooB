@@ -36,11 +36,11 @@ async function handleSave() {
 <div class="flex-1 flex flex-col h-full gap-4 overflow-y-auto max-w-2xl font-sans">
   <!-- General Configuration Card -->
   <div
-    class="p-5 rounded-2xl bg-[#141517] border border-[#25272b] space-y-4 shadow-xs"
+    class="p-5 rounded-2xl bg-bg-panel border border-border-default space-y-4 shadow-xs"
   >
-    <div class="flex items-center gap-2 pb-2 border-b border-[#25272b]">
+    <div class="flex items-center gap-2 pb-2 border-b border-border-default">
       <Icon name="settings" size={16} class="text-[#00b578]" />
-      <h3 class="text-xs font-bold text-white uppercase tracking-wider">
+      <h3 class="text-xs font-bold text-text-hover uppercase tracking-wider">
         Emulator Engine Configuration
       </h3>
     </div>
@@ -66,7 +66,7 @@ async function handleSave() {
         </CustomButton>
       </div>
 
-      <p class="text-[11px] text-[#8c8c8c]">
+      <p class="text-[11px] text-text-muted">
         The directory containing <code class="font-mono text-[#00b578]">ldconsole.exe</code> (e.g. C:\LDPlayer\LDPlayer9).
       </p>
     </div>

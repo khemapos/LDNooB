@@ -14,20 +14,20 @@ let filteredLogs = $derived(
 </script>
 
 <div
-  class="w-full bg-white/90 dark:bg-[#0c0d13]/95 border border-slate-200/90 dark:border-white/[0.08] backdrop-blur-xl rounded-2xl overflow-hidden flex flex-col transition-all duration-200 shadow-sm {isCollapsed
+  class="w-full bg-bg-panel border border-border-default rounded-2xl overflow-hidden flex flex-col transition-all duration-200 shadow-xs {isCollapsed
     ? 'h-9 shrink-0'
     : 'h-48 shrink-0'}"
 >
   <!-- Header Bar -->
   <div
-    class="h-9 px-3.5 flex items-center justify-between border-b border-slate-200/80 dark:border-white/[0.06] select-none bg-slate-50/50 dark:bg-white/[0.02]"
+    class="h-9 px-3.5 flex items-center justify-between border-b border-border-default select-none bg-bg-card"
   >
     <div class="flex items-center gap-2">
-      <Icon name="terminal" size={13} class="text-cyan-500" />
-      <span class="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider font-mono">
+      <Icon name="terminal" size={13} class="text-[#00b578]" />
+      <span class="text-xs font-bold text-text-default uppercase tracking-wider font-mono">
         Activity Log
       </span>
-      <span class="text-[10px] font-mono text-slate-400">
+      <span class="text-[10px] font-mono text-text-muted">
         ({logsStore.entries.length})
       </span>
     </div>
@@ -41,8 +41,8 @@ let filteredLogs = $derived(
             type="button"
             onclick={() => (selectedLevel = "all")}
             class="px-2 py-0.5 rounded cursor-pointer {selectedLevel === 'all'
-              ? 'bg-slate-200 dark:bg-white/10 text-slate-900 dark:text-white'
-              : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}"
+              ? 'bg-bg-card-hover text-text-hover'
+              : 'text-text-muted hover:text-text-hover'}"
           >
             All
           </button>
@@ -50,8 +50,8 @@ let filteredLogs = $derived(
             type="button"
             onclick={() => (selectedLevel = "adb")}
             class="px-2 py-0.5 rounded cursor-pointer {selectedLevel === 'adb'
-              ? 'bg-cyan-500/20 text-cyan-700 dark:text-cyan-300'
-              : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}"
+              ? 'bg-[#1877f2]/20 text-[#1877f2]'
+              : 'text-text-muted hover:text-text-hover'}"
           >
             ADB
           </button>
@@ -59,8 +59,8 @@ let filteredLogs = $derived(
             type="button"
             onclick={() => (selectedLevel = "error")}
             class="px-2 py-0.5 rounded cursor-pointer {selectedLevel === 'error'
-              ? 'bg-rose-500/20 text-rose-700 dark:text-rose-300'
-              : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}"
+              ? 'bg-[#ff4d4f]/20 text-[#ff4d4f]'
+              : 'text-text-muted hover:text-text-hover'}"
           >
             Error
           </button>
@@ -70,7 +70,7 @@ let filteredLogs = $derived(
           type="button"
           title="Clear Logs"
           onclick={() => logsStore.clear()}
-          class="p-1 rounded text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
+          class="p-1 rounded text-text-muted hover:text-text-hover hover:bg-bg-card-hover transition-colors cursor-pointer"
         >
           <Icon name="trash" size={12} />
         </button>
@@ -80,7 +80,7 @@ let filteredLogs = $derived(
         type="button"
         title={isCollapsed ? "Expand Log Panel" : "Collapse Log Panel"}
         onclick={() => (isCollapsed = !isCollapsed)}
-        class="p-1 rounded text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
+        class="p-1 rounded text-text-muted hover:text-text-hover hover:bg-bg-card-hover transition-colors cursor-pointer"
       >
         <Icon name={isCollapsed ? "chevronUp" : "chevronDown"} size={13} />
       </button>
@@ -90,38 +90,38 @@ let filteredLogs = $derived(
   <!-- Log Entries List -->
   {#if !isCollapsed}
     <div
-      class="flex-1 p-3 overflow-y-auto font-mono text-[11px] space-y-1 select-text bg-[#07080d]"
+      class="flex-1 p-3 overflow-y-auto font-mono text-[11px] space-y-1 select-text bg-bg-app"
     >
       {#if filteredLogs.length === 0}
-        <div class="py-6 text-center text-slate-600">
+        <div class="py-6 text-center text-text-muted italic">
           No log events recorded
         </div>
       {:else}
         {#each filteredLogs as log (log.id)}
           <div class="flex items-start gap-2 leading-relaxed">
-            <span class="text-slate-500 shrink-0">{log.timestamp}</span>
+            <span class="text-text-muted shrink-0">{log.timestamp}</span>
             <span
               class="px-1.5 py-0.2 rounded text-[9px] font-bold uppercase shrink-0 {log.level ===
               'success'
-                ? 'bg-emerald-500/20 text-emerald-400'
+                ? 'bg-[#00b578]/20 text-[#00b578]'
                 : log.level === 'error'
-                  ? 'bg-rose-500/20 text-rose-400'
+                  ? 'bg-[#ff4d4f]/20 text-[#ff4d4f]'
                   : log.level === 'warn'
-                    ? 'bg-amber-500/20 text-amber-400'
+                    ? 'bg-[#ffc107]/20 text-[#ffc107]'
                     : log.level === 'adb'
                       ? 'bg-purple-500/20 text-purple-400'
-                      : 'bg-cyan-500/20 text-cyan-400'}"
+                      : 'bg-[#1877f2]/20 text-[#1877f2]'}"
             >
               {log.category}
             </span>
             <span
               class="break-all {log.level === 'error'
-                ? 'text-rose-300'
+                ? 'text-[#ff4d4f]'
                 : log.level === 'success'
-                  ? 'text-emerald-300'
+                  ? 'text-[#00b578]'
                   : log.level === 'adb'
-                    ? 'text-purple-300'
-                    : 'text-slate-300'}"
+                    ? 'text-purple-400'
+                    : 'text-text-default'}"
             >
               {log.message}
             </span>

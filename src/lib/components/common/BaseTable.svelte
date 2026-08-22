@@ -24,7 +24,7 @@ interface Props {
   onUpdateSelectedKeys?: (keys: any[]) => void;
   onRowClick?: (item: any, event: MouseEvent) => void;
   onRowMouseDown?: (item: any, event: MouseEvent) => void;
-  onRowMouseEnter?: (item: any) => void;
+  onRowMouseEnter?: (item: any, event: MouseEvent) => void;
   onRowContextMenu?: (item: any, event: MouseEvent) => void;
   renderCell?: any;
   renderHeader?: any;
@@ -132,9 +132,7 @@ function toggleSelect(key: any) {
   onUpdateSelectedKeys?.(selectedKeys);
 }
 
-// -------------------------------------------------------------
-// Drag-to-select and Click Select Logic (matching D:\ldremote)
-// -------------------------------------------------------------
+// Drag-to-select and Click Select Logic
 let isDragging = $state(false);
 let dragAnchorIndex = $state<number | null>(null);
 let lastClickedIndex = $state<number | null>(null);
@@ -142,7 +140,6 @@ let lastClickedIndex = $state<number | null>(null);
 function handleRowMouseDownInternal(event: MouseEvent, item: any, index: number) {
   onRowMouseDown?.(item, event);
 
-  // Only handle left clicks without modifier keys for drag select
   if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey) {
     return;
   }
@@ -156,7 +153,6 @@ function handleRowMouseDownInternal(event: MouseEvent, item: any, index: number)
   onUpdateSelectedKeys?.([itemKeyVal]);
 
   function handleDragEnd() {
-    // Small timeout so click doesn't override the drag range immediately
     setTimeout(() => {
       isDragging = false;
       dragAnchorIndex = null;
@@ -168,8 +164,8 @@ function handleRowMouseDownInternal(event: MouseEvent, item: any, index: number)
   event.preventDefault();
 }
 
-function handleRowMouseEnterInternal(item: any, index: number) {
-  onRowMouseEnter?.(item);
+function handleRowMouseEnterInternal(event: MouseEvent, item: any, index: number) {
+  onRowMouseEnter?.(item, event);
 
   if (!isDragging || dragAnchorIndex === null) return;
 
@@ -212,9 +208,7 @@ function handleRowClickInternal(event: MouseEvent, item: any, index: number) {
   lastClickedIndex = index;
 }
 
-// -------------------------------------------------------------
 // Column Resizing Logic
-// -------------------------------------------------------------
 let isResizing = false;
 let startX = 0;
 let startWidth = 0;
@@ -270,16 +264,16 @@ function hideEmptyColumns() {
   <!-- Scrollable Table Container -->
   <div class="overflow-x-auto overflow-y-auto flex-1 min-h-[280px]">
     <table
-      class="w-full min-h-full border-collapse text-left text-[11px] text-[#d9d9d9] table-fixed"
+      class="w-full min-h-full border-collapse text-left text-[11px] text-text-default table-fixed"
     >
       <!-- Table Header (matching D:\ldremote) -->
       <thead>
         <tr
-          class="bg-[#18191c] border-b border-[#25272b] text-[#8c8c8c] font-bold uppercase tracking-wider select-none sticky top-0 z-40 shadow-xs"
+          class="bg-bg-card border-b border-border-default text-text-muted font-bold uppercase tracking-wider select-none sticky top-0 z-40 shadow-xs"
         >
           <!-- Checkbox Header (Sticky Left) -->
           <th
-            class="p-0 w-[40px] min-w-[40px] max-w-[40px] sticky left-0 z-10 bg-[#18191c]"
+            class="p-0 w-[40px] min-w-[40px] max-w-[40px] sticky left-0 z-10 bg-bg-card"
           >
             <div class="flex items-center justify-center py-2.5 w-full h-full">
               <input
@@ -296,7 +290,7 @@ function hideEmptyColumns() {
           {#each visibleColumns as col (col.key)}
             {@const width = (columnWidths[col.key] || col.width || 100) + "px"}
             <th
-              class="py-2.5 px-3 border-r border-[#25272b]/45 relative select-none bg-[#18191c] {col.key ===
+              class="py-2.5 px-3 border-r border-border-default/45 relative select-none bg-bg-card {col.key ===
               'index'
                 ? 'text-center'
                 : ''} {col.key === 'actions'
@@ -316,8 +310,8 @@ function hideEmptyColumns() {
                       e.stopPropagation();
                       showColumnSelector = !showColumnSelector;
                     }}
-                    class="p-1 hover:bg-[#2e3035] text-[#8c8c8c] hover:text-white rounded cursor-pointer transition-colors flex items-center justify-center shrink-0 {showColumnSelector
-                      ? 'text-white bg-[#2e3035]'
+                    class="p-1 hover:bg-bg-card-hover text-text-muted hover:text-text-hover rounded cursor-pointer transition-colors flex items-center justify-center shrink-0 {showColumnSelector
+                      ? 'text-text-hover bg-bg-card-hover'
                       : ''}"
                     title="Custom Columns"
                   >
@@ -341,11 +335,11 @@ function hideEmptyColumns() {
                     <!-- svelte-ignore a11y_click_events_have_key_events -->
                     <!-- svelte-ignore a11y_no_static_element_interactions -->
                     <div
-                      class="absolute right-0 top-full mt-2 w-52 rounded-xl border border-[#2d2f34] bg-[#18191c] shadow-2xl z-50 text-left normal-case tracking-normal p-2"
+                      class="absolute right-0 top-full mt-2 w-52 rounded-xl border border-border-default bg-bg-card shadow-2xl z-50 text-left normal-case tracking-normal p-2"
                       onclick={(e) => e.stopPropagation()}
                     >
                       <div
-                        class="flex items-center justify-between gap-1 pb-2 mb-2 border-b border-[#2d2f34] text-[10px] text-[#8c8c8c] font-bold"
+                        class="flex items-center justify-between gap-1 pb-2 mb-2 border-b border-border-default text-[10px] text-text-muted font-bold"
                       >
                         <button
                           type="button"
@@ -354,7 +348,7 @@ function hideEmptyColumns() {
                         >
                           Reset
                         </button>
-                        <span class="text-[#2d2f34]">|</span>
+                        <span class="text-border-default">|</span>
                         <button
                           type="button"
                           onclick={hideEmptyColumns}
@@ -362,7 +356,7 @@ function hideEmptyColumns() {
                         >
                           Hide Empty
                         </button>
-                        <span class="text-[#2d2f34]">|</span>
+                        <span class="text-border-default">|</span>
                         <button
                           type="button"
                           onclick={showAllColumns}
@@ -376,7 +370,7 @@ function hideEmptyColumns() {
                         {#each columns as c}
                           {#if c.key !== "actions"}
                             <label
-                              class="flex items-center justify-between px-2 py-1 rounded hover:bg-[#25272b] text-[#d9d9d9] text-[11px] font-medium cursor-pointer {c.canHide
+                              class="flex items-center justify-between px-2 py-1 rounded hover:bg-bg-card-hover text-text-default text-[11px] font-medium cursor-pointer {c.canHide
                                 ? ''
                                 : 'opacity-40 cursor-not-allowed'}"
                             >
@@ -427,13 +421,13 @@ function hideEmptyColumns() {
             <tr class="text-center">
               <td
                 colspan={visibleColumns.length + 1}
-                class="py-16 text-[#8c8c8c]"
+                class="py-16 text-text-muted"
               >
                 <div
                   class="flex flex-col items-center justify-center gap-2 max-w-sm mx-auto font-sans"
                 >
                   <Icon name="cube" size={28} class="opacity-40" />
-                  <p class="font-bold text-xs text-[#d9d9d9]">
+                  <p class="font-bold text-xs text-text-default">
                     No items found.
                   </p>
                 </div>
@@ -446,12 +440,12 @@ function hideEmptyColumns() {
             {@const isSelected = selectedKeys.includes(item[itemKey])}
             <tr
               id="table-row-{rowKey}"
-              class="group border-0 border-[#25272b]/20 transition-all duration-150 ease-out {isSelected
-                ? 'bg-[#00b578]/12 text-white shadow-[inset_3px_0_0_0_#00b578]'
-                : 'hover:bg-[#1f2125] text-[#d9d9d9]'}"
+              class="group border-0 border-border-default/20 transition-all duration-150 ease-out {isSelected
+                ? 'bg-[#00b578]/12 text-text-hover shadow-[inset_3px_0_0_0_#00b578]'
+                : 'hover:bg-bg-card-hover text-text-default'}"
               onclick={(e) => handleRowClickInternal(e, item, index)}
               onmousedown={(e) => handleRowMouseDownInternal(e, item, index)}
-              onmouseenter={() => handleRowMouseEnterInternal(item, index)}
+              onmouseenter={(e) => handleRowMouseEnterInternal(e, item, index)}
               oncontextmenu={(e) => {
                 e.preventDefault();
                 onRowContextMenu?.(item, e);
@@ -462,8 +456,8 @@ function hideEmptyColumns() {
               <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
               <td
                 class="p-0 w-[40px] min-w-[40px] max-w-[40px] sticky left-0 z-10 transition-colors duration-150 {isSelected
-                  ? 'bg-[color-mix(in_srgb,#00b578_12%,#141517)] group-hover:bg-[color-mix(in_srgb,#00b578_12%,#1f2125)]'
-                  : 'bg-[#141517] group-hover:bg-[#1f2125]'}"
+                  ? 'bg-[color-mix(in_srgb,#00b578_12%,var(--color-bg-panel))] group-hover:bg-[color-mix(in_srgb,#00b578_12%,var(--color-bg-card-hover))]'
+                  : 'bg-bg-panel group-hover:bg-bg-card-hover'}"
                 onclick={(e) => e.stopPropagation()}
                 onmousedown={(e) => e.stopPropagation()}
               >
@@ -487,16 +481,16 @@ function hideEmptyColumns() {
                   {@const width =
                     (columnWidths[col.key] || col.width || 100) + "px"}
                   <td
-                    class="py-2.5 px-3 border-r border-[#25272b]/20 transition-colors duration-150 {col.key ===
+                    class="py-2.5 px-3 border-r border-border-default/20 transition-colors duration-150 {col.key ===
                     'index'
                       ? 'text-center font-mono'
                       : ''} {col.key === 'name'
-                      ? 'font-bold text-white'
+                      ? 'font-bold text-text-hover'
                       : ''} {col.key === 'actions'
                       ? `sticky right-0 z-10 shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.25)] group-hover:z-30 focus-within:z-30 ${
                           isSelected
-                            ? 'bg-[color-mix(in_srgb,#00b578_12%,#141517)] group-hover:bg-[color-mix(in_srgb,#00b578_12%,#1f2125)]'
-                            : 'bg-[#141517] group-hover:bg-[#1f2125]'
+                            ? 'bg-[color-mix(in_srgb,#00b578_12%,var(--color-bg-panel))] group-hover:bg-[color-mix(in_srgb,#00b578_12%,var(--color-bg-card-hover))]'
+                            : 'bg-bg-panel group-hover:bg-bg-card-hover'
                         }`
                       : ''}"
                     style="width: {width}; min-width: {width}; maxWidth: {width};"
@@ -519,14 +513,14 @@ function hideEmptyColumns() {
   <!-- Pagination Footer (matching D:\ldremote) -->
   {#if paginate && isConnected && totalItems > 0}
     <footer
-      class="shrink-0 flex flex-col lg:flex-row items-center justify-between border-t border-[#25272b]/45 px-5 py-4 lg:py-3.5 select-none z-10 relative bg-[#141517] gap-4 lg:gap-0 font-sans"
+      class="shrink-0 flex flex-col lg:flex-row items-center justify-between border-t border-border-default/45 px-5 py-4 lg:py-3.5 select-none z-10 relative bg-bg-panel gap-4 lg:gap-0 font-sans"
     >
       <!-- Details -->
       <div
         class="flex items-center select-none w-full lg:w-auto justify-center lg:justify-start"
       >
         <div
-          class="h-9 px-4 rounded-xl border border-[#25272b] bg-[#18191c] text-xs text-[#8c8c8c] font-medium flex items-center gap-2 shadow-xs"
+          class="h-9 px-4 rounded-xl border border-border-default bg-bg-card text-xs text-text-muted font-medium flex items-center gap-2 shadow-xs"
         >
           <span class="relative flex h-2 w-2 mr-0.5">
             <span
@@ -537,11 +531,11 @@ function hideEmptyColumns() {
             ></span>
           </span>
           <span>Showing</span>
-          <span class="font-bold text-white font-mono">{startIndex + 1}</span>
+          <span class="font-bold text-text-hover font-mono">{startIndex + 1}</span>
           <span>to</span>
-          <span class="font-bold text-white font-mono">{endIndex}</span>
+          <span class="font-bold text-text-hover font-mono">{endIndex}</span>
           <span>of</span>
-          <span class="font-bold text-white font-mono">{totalItems}</span>
+          <span class="font-bold text-text-hover font-mono">{totalItems}</span>
           <span>items</span>
         </div>
       </div>
@@ -550,7 +544,7 @@ function hideEmptyColumns() {
       <div class="flex items-center gap-3">
         <select
           bind:value={pageSize}
-          class="h-9 px-3 rounded-xl border border-[#25272b] bg-[#18191c] text-xs text-white font-mono focus:outline-none focus:border-[#00b578] cursor-pointer"
+          class="h-9 px-3 rounded-xl border border-border-default bg-bg-card text-xs text-text-hover font-mono focus:outline-none focus:border-[#00b578] cursor-pointer"
         >
           {#each pageSizes as size}
             <option value={size}>{size} / page</option>
@@ -562,18 +556,18 @@ function hideEmptyColumns() {
             type="button"
             disabled={currentPage <= 1}
             onclick={() => (currentPage = Math.max(1, currentPage - 1))}
-            class="h-9 px-3 rounded-xl border border-[#25272b] bg-[#18191c] text-[#d9d9d9] hover:text-white hover:bg-[#1f2125] disabled:opacity-40 cursor-pointer"
+            class="h-9 px-3 rounded-xl border border-border-default bg-bg-card text-text-default hover:text-text-hover hover:bg-bg-card-hover disabled:opacity-40 cursor-pointer"
           >
             Prev
           </button>
-          <span class="px-2 text-white font-semibold">
+          <span class="px-2 text-text-hover font-semibold">
             {currentPage} / {totalPages}
           </span>
           <button
             type="button"
             disabled={currentPage >= totalPages}
             onclick={() => (currentPage = Math.min(totalPages, currentPage + 1))}
-            class="h-9 px-3 rounded-xl border border-[#25272b] bg-[#18191c] text-[#d9d9d9] hover:text-white hover:bg-[#1f2125] disabled:opacity-40 cursor-pointer"
+            class="h-9 px-3 rounded-xl border border-border-default bg-bg-card text-text-default hover:text-text-hover hover:bg-bg-card-hover disabled:opacity-40 cursor-pointer"
           >
             Next
           </button>

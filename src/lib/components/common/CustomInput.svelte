@@ -36,24 +36,24 @@ let inputType = $derived(isPassword ? (showPassword ? "text" : "password") : typ
 </script>
 
 <div
-  class="flex items-center w-full border rounded-xl px-3.5 py-2 transition-all duration-150 shadow-xs cursor-text bg-[#0e0f11] hover:bg-[#141517] focus-within:ring-2 focus-within:ring-[#00b578]/20 focus-within:border-[#00b578] {error
+  class="flex items-center w-full border rounded-xl px-3.5 py-2 transition-all duration-150 shadow-xs cursor-text bg-bg-card hover:bg-bg-card-hover focus-within:ring-2 focus-within:ring-[#00b578]/20 focus-within:border-[#00b578] {error
     ? 'border-[#ff4d4f]/60 focus-within:ring-[#ff4d4f]/20 focus-within:border-[#ff4d4f]'
-    : 'border-[#25272b] hover:border-[#33363c]'} {disabled
+    : 'border-border-default hover:border-border-hover'} {disabled
     ? 'opacity-50 cursor-not-allowed'
     : ''} {className}"
 >
   {#if icon}
-    <div class="flex items-center justify-center min-w-[18px] text-[#8c8c8c] shrink-0">
+    <div class="flex items-center justify-center min-w-[18px] text-text-muted shrink-0">
       <Icon name={icon} size={14} />
     </div>
-    <div class="border-r h-5 mx-3 border-[#25272b] select-none shrink-0"></div>
+    <div class="border-r h-5 mx-3 border-border-default select-none shrink-0"></div>
   {/if}
 
   <div class="flex-1 flex flex-col text-left overflow-hidden">
     {#if label}
       <label
         for={id}
-        class="text-[9px] font-extrabold uppercase tracking-widest text-[#8c8c8c] select-none truncate"
+        class="text-[9px] font-extrabold uppercase tracking-widest text-text-muted select-none truncate"
       >
         {label}
       </label>
@@ -67,7 +67,7 @@ let inputType = $derived(isPassword ? (showPassword ? "text" : "password") : typ
       {oninput}
       autocomplete="off"
       spellcheck="false"
-      class="w-full text-xs font-semibold bg-transparent outline-none border-none p-0 focus:ring-0 leading-tight text-white placeholder-[#8c8c8c] font-sans"
+      class="w-full text-xs font-semibold bg-transparent outline-none border-none p-0 focus:ring-0 leading-tight text-text-default placeholder:text-text-muted font-sans"
     />
   </div>
 
@@ -76,7 +76,7 @@ let inputType = $derived(isPassword ? (showPassword ? "text" : "password") : typ
       type="button"
       title={showPassword ? "Hide password" : "Show password"}
       onclick={() => (showPassword = !showPassword)}
-      class="p-1 text-[#8c8c8c] hover:text-white transition-colors cursor-pointer shrink-0"
+      class="p-1 text-text-muted hover:text-text-hover transition-colors cursor-pointer shrink-0"
     >
       <Icon name={showPassword ? "eye" : "eye"} size={14} />
     </button>

@@ -1,6 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
 
@@ -21,7 +23,7 @@
 
   --color-brand-yellow: #ffc107;
 
-  /* App Backgrounds & Cards */
+  /* Semantic Theme Tokens */
   --color-bg-app: #0e0f11;
   --color-bg-panel: #141517;
   --color-bg-card: #18191c;
@@ -29,7 +31,6 @@
   --color-border-default: #25272b;
   --color-border-hover: #33363c;
 
-  /* Typography */
   --color-text-default: #d9d9d9;
   --color-text-muted: #8c8c8c;
   --color-text-hover: #ffffff;
@@ -39,12 +40,8 @@
   color-scheme: dark light;
 }
 
-html.dark {
-  background-color: var(--color-bg-app);
-  color: var(--color-text-default);
-}
-
-html:not(.dark) {
+/* Light Theme Variables */
+.theme-light, html:not(.dark) {
   --color-bg-app: #f8fafc;
   --color-bg-panel: #ffffff;
   --color-bg-card: #f1f5f9;
@@ -54,11 +51,21 @@ html:not(.dark) {
   --color-text-default: #334155;
   --color-text-muted: #64748b;
   --color-text-hover: #0f172a;
-  background-color: var(--color-bg-app);
-  color: var(--color-text-default);
 }
 
-/* Base Desktop Styles */
+/* Dark Theme Variables */
+.theme-dark, html.dark {
+  --color-bg-app: #0e0f11;
+  --color-bg-panel: #141517;
+  --color-bg-card: #18191c;
+  --color-bg-card-hover: #1f2125;
+  --color-border-default: #25272b;
+  --color-border-hover: #33363c;
+  --color-text-default: #d9d9d9;
+  --color-text-muted: #8c8c8c;
+  --color-text-hover: #ffffff;
+}
+
 body {
   font-family: var(--font-sans);
   background-color: var(--color-bg-app);
@@ -67,6 +74,7 @@ body {
   overflow-x: hidden;
   user-select: none;
   -webkit-user-select: none;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 input,
@@ -83,20 +91,19 @@ textarea,
   -webkit-appearance: none;
   width: 16px;
   height: 16px;
-  border: 1.5px solid #2d2f34;
+  border: 1.5px solid var(--color-border-default);
   border-radius: 4px;
-  background: rgba(21, 23, 30, 0.9);
+  background: var(--color-bg-card);
   cursor: pointer;
   position: relative;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.15s ease;
   flex-shrink: 0;
   display: inline-block;
   vertical-align: middle;
 }
 
 .custom-checkbox:hover {
-  border-color: #3d4454;
-  background: rgba(28, 31, 40, 0.9);
+  border-color: var(--color-brand-green);
   box-shadow: 0 0 0 3px rgba(0, 181, 120, 0.15);
 }
 
@@ -106,7 +113,7 @@ textarea,
   box-shadow: 0 1px 3px rgba(0, 181, 120, 0.3) !important;
 }
 
-/* Custom discreet scrollbar */
+/* Discreet Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -117,14 +124,14 @@ textarea,
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.2);
+  background: rgba(148, 163, 184, 0.25);
   border-radius: 9999px;
 }
 
-.dark ::-webkit-scrollbar-thumb {
+.dark ::-webkit-scrollbar-thumb, .theme-dark ::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.1);
 }
 
-.dark ::-webkit-scrollbar-thumb:hover {
+.dark ::-webkit-scrollbar-thumb:hover, .theme-dark ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.2);
 }

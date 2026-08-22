@@ -41,7 +41,7 @@ function closeModal() {
 
 {#if open}
   <div
-    class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-in fade-in duration-150 select-none"
+    class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150 select-none"
     role="presentation"
     onclick={(e) => {
       if (e.target === e.currentTarget) closeModal();
@@ -50,11 +50,11 @@ function closeModal() {
     <div
       role="dialog"
       aria-modal="true"
-      class="relative w-full {maxWidth} bg-[#131416] border border-[#25272b] shadow-2xl rounded-2xl overflow-hidden backdrop-blur-md flex flex-col transition-all duration-200 max-h-[90vh] text-white"
+      class="relative w-full {maxWidth} bg-bg-panel border border-border-default shadow-2xl rounded-2xl overflow-hidden backdrop-blur-md flex flex-col transition-all duration-200 max-h-[90vh] text-text-default"
     >
       <!-- Dialog Header matching D:\ldremote -->
       <div
-        class="flex items-center justify-between px-6 py-4 border-b border-[#25272b] bg-[#141517]"
+        class="flex items-center justify-between px-6 py-4 border-b border-border-default bg-bg-card"
       >
         <div class="flex items-center gap-2.5">
           {#if icon}
@@ -63,11 +63,11 @@ function closeModal() {
             </div>
           {/if}
           <div>
-            <h3 class="text-[11.5px] font-extrabold uppercase tracking-widest text-[#d9d9d9] font-sans">
+            <h3 class="text-[11.5px] font-extrabold uppercase tracking-widest text-text-default font-sans">
               {title}
             </h3>
             {#if subtitle}
-              <p class="text-[10px] text-[#8c8c8c] mt-0.5 font-sans">
+              <p class="text-[10px] text-text-muted mt-0.5 font-sans">
                 {subtitle}
               </p>
             {/if}
@@ -85,7 +85,7 @@ function closeModal() {
       </div>
 
       <!-- Dialog Body -->
-      <div class="p-6 overflow-y-auto flex-1 text-xs text-[#d9d9d9] font-sans">
+      <div class="p-6 overflow-y-auto flex-1 text-xs text-text-default font-sans">
         {#if children}
           {@render children()}
         {/if}
@@ -94,7 +94,7 @@ function closeModal() {
       <!-- Dialog Footer -->
       {#if footer}
         <div
-          class="flex items-center justify-end gap-2.5 px-6 py-4 border-t border-[#25272b] bg-[#141517]"
+          class="flex items-center justify-end gap-2.5 px-6 py-4 border-t border-border-default bg-bg-card"
         >
           {@render footer()}
         </div>

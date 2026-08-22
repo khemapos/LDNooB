@@ -12,7 +12,7 @@ onMount(() => {
 });
 </script>
 
-<div class="h-screen w-screen flex flex-col overflow-hidden bg-slate-50 dark:bg-[#08090d] text-slate-900 dark:text-slate-100 select-none transition-colors duration-150 font-sans antialiased">
+<div class="h-screen w-screen flex flex-col overflow-hidden bg-bg-app text-text-default select-none transition-colors duration-150 font-sans antialiased">
   <!-- Desktop Frameless Window Title Bar -->
   <WindowBar title="LDNooB" />
 

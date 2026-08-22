@@ -40,13 +40,13 @@ function toggleTheme(event?: MouseEvent) {
   data-tauri-drag-region
   aria-label="Desktop Window Title Bar"
   ondblclick={handleToggleMaximize}
-  class="h-10 w-full bg-white/90 dark:bg-[#0c0d13]/95 border-b border-slate-200/80 dark:border-white/[0.06] backdrop-blur-2xl select-none flex items-center justify-between px-3 z-40 relative shrink-0 transition-colors duration-150 shadow-[0_1px_2px_rgba(0,0,0,0.02)] dark:shadow-[0_1px_0_rgba(255,255,255,0.03)]"
+  class="h-10 w-full bg-bg-panel border-b border-border-default select-none flex items-center justify-between px-3 z-40 relative shrink-0 transition-colors duration-150 shadow-xs"
 >
   <!-- Left: Branding & Status -->
   <div data-tauri-drag-region class="flex items-center gap-2.5 shrink-0">
     <!-- App Logo Icon -->
     <div
-      class="w-6 h-6 rounded-lg bg-gradient-to-tr from-cyan-400 via-blue-500 to-indigo-600 flex items-center justify-center shadow-[0_0_12px_rgba(6,182,212,0.3)] ring-1 ring-black/5 dark:ring-white/20"
+      class="w-6 h-6 rounded-lg bg-gradient-to-tr from-[#00b578] to-[#1877f2] flex items-center justify-center shadow-xs"
     >
       <Icon name="cube" size={13} class="text-white drop-shadow" />
     </div>
@@ -54,7 +54,7 @@ function toggleTheme(event?: MouseEvent) {
     <!-- App Name -->
     <div class="flex items-center gap-2">
       <span
-        class="text-xs font-bold tracking-tight text-slate-850 dark:text-slate-100 font-mono"
+        class="text-xs font-bold tracking-tight text-text-default font-mono"
       >
         {title}
       </span>
@@ -73,13 +73,13 @@ function toggleTheme(event?: MouseEvent) {
         ? "Switch to Light Mode"
         : "Switch to Dark Mode"}
       onclick={toggleTheme}
-      class="w-7 h-7 rounded-md flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-amber-500 dark:hover:text-amber-300 hover:bg-slate-100 dark:hover:bg-white/[0.06] active:bg-slate-200 dark:active:bg-white/[0.10] transition-colors cursor-pointer"
+      class="w-7 h-7 rounded-md flex items-center justify-center text-text-muted hover:text-[#ffc107] hover:bg-bg-card active:bg-bg-card-hover transition-colors cursor-pointer"
     >
       <Icon name={themeStore.current === "dark" ? "sun" : "moon"} size={13} />
     </button>
 
     <!-- Divider -->
-    <div class="h-4 w-px bg-slate-200 dark:bg-white/[0.08] mx-0.5"></div>
+    <div class="h-4 w-px bg-border-default mx-0.5"></div>
 
     <!-- Window Buttons Group -->
     <div class="flex items-center gap-0.5">
@@ -88,7 +88,7 @@ function toggleTheme(event?: MouseEvent) {
         type="button"
         title="Minimize"
         onclick={handleMinimize}
-        class="w-8 h-7 rounded-md flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.06] active:bg-slate-200 dark:active:bg-white/[0.10] transition-colors cursor-pointer"
+        class="w-8 h-7 rounded-md flex items-center justify-center text-text-muted hover:text-text-hover hover:bg-bg-card active:bg-bg-card-hover transition-colors cursor-pointer"
       >
         <Icon name="minimize" size={12} />
       </button>
@@ -98,7 +98,7 @@ function toggleTheme(event?: MouseEvent) {
         type="button"
         title={windowStore.isMaximized ? "Restore" : "Maximize"}
         onclick={handleToggleMaximize}
-        class="w-8 h-7 rounded-md flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.06] active:bg-slate-200 dark:active:bg-white/[0.10] transition-colors cursor-pointer"
+        class="w-8 h-7 rounded-md flex items-center justify-center text-text-muted hover:text-text-hover hover:bg-bg-card active:bg-bg-card-hover transition-colors cursor-pointer"
       >
         <Icon
           name={windowStore.isMaximized ? "restore" : "maximize"}
@@ -111,7 +111,7 @@ function toggleTheme(event?: MouseEvent) {
         type="button"
         title="Close"
         onclick={handleClose}
-        class="w-8 h-7 rounded-md flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-white hover:bg-rose-600 active:bg-rose-700 transition-colors cursor-pointer"
+        class="w-8 h-7 rounded-md flex items-center justify-center text-text-muted hover:text-white hover:bg-rose-600 active:bg-rose-700 transition-colors cursor-pointer"
       >
         <Icon name="close" size={12} />
       </button>
