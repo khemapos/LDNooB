@@ -446,12 +446,15 @@ function hideEmptyColumns() {
               <!-- svelte-ignore a11y_click_events_have_key_events -->
               <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
               <td
-                class="p-0 w-[40px] min-w-[40px] max-w-[40px] sticky left-0 z-30 transition-colors duration-150 border-r border-b border-border-default/20 {isSelected
-                  ? 'bg-[color-mix(in_srgb,#00b578_12%,var(--color-bg-panel))] group-hover:bg-[color-mix(in_srgb,#00b578_12%,var(--color-bg-card-hover))] shadow-[inset_3px_0_0_0_#00b578]'
-                  : 'bg-bg-panel group-hover:bg-bg-card-hover'}"
+                class="p-0 w-[40px] min-w-[40px] max-w-[40px] sticky left-0 z-20 transition-colors duration-150 relative border-r {isSelected
+                  ? 'bg-[color-mix(in_srgb,#00b578_12%,var(--color-bg-panel))] group-hover:bg-[color-mix(in_srgb,#00b578_12%,var(--color-bg-card-hover))] border-b border-[#00b578]/20 border-r-border-default/20'
+                  : 'bg-bg-panel group-hover:bg-bg-card-hover border-b border-border-default/20 border-r-border-default/20'}"
                 onclick={(e) => e.stopPropagation()}
                 onmousedown={(e) => e.stopPropagation()}
               >
+                {#if isSelected}
+                  <div class="absolute left-0 top-0 bottom-0 w-[3.5px] bg-[#00b578] pointer-events-none z-30"></div>
+                {/if}
                 <div class="flex items-center justify-center py-2.5 w-full h-full">
                   <input
                     type="checkbox"
@@ -469,13 +472,15 @@ function hideEmptyColumns() {
                 {@const width =
                   (columnWidths[col.key] || col.width || 120) + "px"}
                 <td
-                  class="py-2.5 px-3 border-r border-b border-border-default/20 transition-colors duration-150 {col.key ===
+                  class="py-2.5 px-3 border-r transition-colors duration-150 {isSelected
+                    ? 'border-b border-[#00b578]/20 border-r-border-default/20'
+                    : 'border-b border-border-default/20 border-r-border-default/20'} {col.key ===
                   'index'
                     ? 'text-center font-mono'
                     : ''} {col.key === 'name'
                     ? 'font-bold text-text-hover'
                     : ''} {col.key === 'actions'
-                    ? `sticky right-0 z-30 ${
+                    ? `sticky right-0 z-20 ${
                         isSelected
                           ? 'bg-[color-mix(in_srgb,#00b578_12%,var(--color-bg-panel))] group-hover:bg-[color-mix(in_srgb,#00b578_12%,var(--color-bg-card-hover))]'
                           : 'bg-bg-panel group-hover:bg-bg-card-hover'
