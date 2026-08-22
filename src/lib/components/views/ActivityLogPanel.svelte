@@ -14,7 +14,7 @@ let viewingImage = $state<string | null>(null);
 let imageLoading = $state(false);
 let logsContainerRef = $state<HTMLDivElement | null>(null);
 
-const categories = ["All", "Facebook Registration", "Emulator", "Proxy", "System", "ADB"];
+const categories = ["All", "Emulator", "Proxy", "System", "ADB"];
 const severities = ["All", "Info", "Success", "Warning", "Error"];
 
 // Filtered logs
@@ -22,10 +22,7 @@ let filteredLogs = $derived(
   logsStore.entries.filter((log) => {
     const q = searchQuery.toLowerCase().trim();
     const categoryMatch =
-      selectedCategory === "All" ||
-      log.category.toLowerCase() === selectedCategory.toLowerCase() ||
-      (selectedCategory === "Facebook Registration" &&
-        log.category.toLowerCase().includes("facebook"));
+      selectedCategory === "All" || log.category.toLowerCase() === selectedCategory.toLowerCase();
 
     const levelMatch =
       selectedLevel === "All" ||
@@ -200,7 +197,7 @@ $effect(() => {
                   ? 'text-text-hover font-bold'
                   : 'text-text-muted hover:text-text-hover'}"
               >
-                <span>{cat === "Facebook Registration" ? "FB Reg" : cat}</span>
+                <span>{cat}</span>
               </button>
             {/each}
           </div>
