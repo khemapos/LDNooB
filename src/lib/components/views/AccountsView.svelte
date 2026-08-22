@@ -13,15 +13,15 @@ let showProxyModal = $state(false);
 let importInput = $state("");
 
 let columns = $state<ColumnConfig[]>([
-  { key: "index", label: "Index", visible: true, canHide: true, width: 65, align: "center" },
+  { key: "index", label: "Index", visible: true, canHide: true, width: 60, align: "center" },
   { key: "hostEmulator", label: "Host Emulator", visible: true, canHide: true, width: 140 },
-  { key: "uid", label: "UID / Name", visible: true, canHide: false, width: 140 },
-  { key: "profileName", label: "Profile Name", visible: true, canHide: true, width: 130 },
+  { key: "uid", label: "UID / Name", visible: true, canHide: false, width: 150 },
+  { key: "profileName", label: "Profile Name", visible: true, canHide: true, width: 140 },
   { key: "password", label: "Password", visible: true, canHide: true, width: 120 },
-  { key: "twoFA", label: "2FA Key", visible: true, canHide: true, width: 110 },
+  { key: "twoFA", label: "2FA Key", visible: true, canHide: true, width: 120 },
   { key: "proxy", label: "Proxy", visible: true, canHide: true, width: 140 },
-  { key: "status", label: "FB Status", visible: true, canHide: true, width: 100, align: "center" },
-  { key: "actions", label: "Actions", visible: true, canHide: false, width: 100, align: "right" },
+  { key: "status", label: "FB Status", visible: true, canHide: true, width: 110, align: "center" },
+  { key: "actions", label: "Actions", visible: true, canHide: false, width: 80, align: "right" },
 ]);
 
 function handleImport() {
@@ -64,7 +64,7 @@ function handleImport() {
   </div>
 
   <!-- Accounts Table -->
-  <div class="flex-1 overflow-hidden">
+  <div class="flex-1 overflow-hidden flex flex-col min-h-0">
     <BaseTable
       bind:columns
       items={accountsStore.accounts}
@@ -161,7 +161,7 @@ function handleImport() {
           <!-- svelte-ignore a11y_click_events_have_key_events -->
           <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
           <td
-            class="py-2.5 px-3 text-right sticky right-0 z-10 shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.25)] group-hover:z-30 focus-within:z-30 {isSelected
+            class="py-2 px-3 text-right sticky right-0 z-30 shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.25)] group-hover:z-30 focus-within:z-30 {isSelected
               ? 'bg-[color-mix(in_srgb,#00b578_12%,var(--color-bg-panel))] group-hover:bg-[color-mix(in_srgb,#00b578_12%,var(--color-bg-card-hover))]'
               : 'bg-bg-panel group-hover:bg-bg-card-hover'}"
             onclick={(e) => e.stopPropagation()}

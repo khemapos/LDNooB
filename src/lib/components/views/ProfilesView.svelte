@@ -22,13 +22,12 @@ let showDeleteConfirm = $state(false);
 let deleteTargetIndex = $state<number | null>(null);
 
 let columns = $state<ColumnConfig[]>([
-  { key: "index", label: "Index", visible: true, canHide: true, width: 70, align: "center" },
-  { key: "hostEmulator", label: "Engine", visible: true, canHide: true, width: 110 },
+  { key: "index", label: "No./ID", visible: true, canHide: true, width: 65, align: "center" },
   { key: "name", label: "Instance Name", visible: true, canHide: false, width: 170 },
-  { key: "status", label: "Status", visible: true, canHide: true, width: 105, align: "center" },
-  { key: "resolution", label: "Resolution & DPI", visible: true, canHide: true, width: 160 },
+  { key: "status", label: "Status", visible: true, canHide: true, width: 110, align: "center" },
+  { key: "resolution", label: "Resolution & DPI", visible: true, canHide: true, width: 150 },
   { key: "model", label: "Device Model", visible: true, canHide: true, width: 150 },
-  { key: "proxy", label: "Proxy", visible: true, canHide: true, width: 150 },
+  { key: "proxy", label: "Proxy / IP", visible: true, canHide: true, width: 150 },
   { key: "metrics", label: "CPU / RAM", visible: true, canHide: true, width: 130 },
   { key: "pid", label: "PID", visible: true, canHide: true, width: 80, align: "center" },
   { key: "actions", label: "Actions", visible: true, canHide: false, width: 180, align: "right" },
@@ -183,7 +182,7 @@ function openModify(emu: Emulator) {
   </div>
 
   <!-- Primary Fleet Table -->
-  <div class="flex-1 overflow-hidden">
+  <div class="flex-1 overflow-hidden flex flex-col min-h-0">
     <BaseTable
       bind:columns
       items={emulatorsStore.filteredInstances}
@@ -200,29 +199,23 @@ function openModify(emu: Emulator) {
           </td>
         {/if}
 
-        <!-- Engine -->
-        {#if columns.find((c) => c.key === "hostEmulator")?.visible}
-          <td
-            class="py-2.5 px-3 text-xs text-text-default border-r border-border-default/20"
-          >
-            <span
-              class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-bg-card border border-border-default text-[11px] font-medium text-text-muted"
-            >
-              LDPlayer 9
-            </span>
-          </td>
-        {/if}
-
-        <!-- Name -->
+        <!-- Name with Live Glow Indicator -->
         {#if columns.find((c) => c.key === "name")?.visible}
           <td
             class="py-2.5 px-3 font-bold text-text-hover border-r border-border-default/20"
           >
-            {item.name}
+            <div class="flex items-center gap-2">
+              <span
+                class="w-2 h-2 rounded-full shrink-0 {item.is_running
+                  ? 'bg-[#00b578] shadow-[0_0_8px_rgba(0,181,120,0.6)] animate-pulse'
+                  : 'bg-text-muted/40'}"
+              ></span>
+              <span class="truncate">{item.name}</span>
+            </div>
           </td>
         {/if}
 
-        <!-- Status -->
+        <!-- Status Pill -->
         {#if columns.find((c) => c.key === "status")?.visible}
           <td
             class="py-2.5 px-3 text-center border-r border-border-default/20"
@@ -231,7 +224,7 @@ function openModify(emu: Emulator) {
               <span
                 class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#00b578]/10 text-[#00b578] border border-[#00b578]/25"
               >
-                <span class="w-1.5 h-1.5 rounded-full bg-[#00b578] animate-pulse"></span>
+                <span class="w-1.5 h-1.5 rounded-full bg-[#00b578] animate-ping"></span>
                 Running
               </span>
             {:else}
@@ -258,7 +251,7 @@ function openModify(emu: Emulator) {
           <td
             class="py-2.5 px-3 text-text-default text-xs border-r border-border-default/20"
           >
-            {item.brand} {item.model}
+            {item.brand ? `${item.brand} ` : ""}{item.model || "Samsung Galaxy S22"}
           </td>
         {/if}
 
@@ -294,7 +287,7 @@ function openModify(emu: Emulator) {
           <!-- svelte-ignore a11y_click_events_have_key_events -->
           <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
           <td
-            class="py-2.5 px-3 text-right sticky right-0 z-10 shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.25)] group-hover:z-30 focus-within:z-30 {isSelected
+            class="py-2 px-3 text-right sticky right-0 z-30 shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.25)] group-hover:z-30 focus-within:z-30 {isSelected
               ? 'bg-[color-mix(in_srgb,#00b578_12%,var(--color-bg-panel))] group-hover:bg-[color-mix(in_srgb,#00b578_12%,var(--color-bg-card-hover))]'
               : 'bg-bg-panel group-hover:bg-bg-card-hover'}"
             onclick={(e) => e.stopPropagation()}
@@ -310,23 +303,23 @@ function openModify(emu: Emulator) {
                 >
                   <Icon name="terminal" size={13} />
                 </button>
-                <CustomButton
-                  variant="danger"
-                  size="xs"
-                  title="Stop Emulator"
+                <button
+                  type="button"
+                  title="Stop Emulator Instance"
                   onclick={() => emulatorsStore.quit(item.index)}
+                  class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-[#ff4d4f]/15 text-[#ff4d4f] border border-[#ff4d4f]/30 hover:bg-[#ff4d4f]/25 transition-all cursor-pointer active:scale-95"
                 >
                   Stop
-                </CustomButton>
+                </button>
               {:else}
-                <CustomButton
-                  variant="success"
-                  size="xs"
-                  title="Start Emulator"
+                <button
+                  type="button"
+                  title="Start Emulator Instance"
                   onclick={() => emulatorsStore.launch(item.index)}
+                  class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-[#00b578]/15 text-[#00b578] border border-[#00b578]/30 hover:bg-[#00b578]/25 transition-all cursor-pointer active:scale-95"
                 >
                   Start
-                </CustomButton>
+                </button>
               {/if}
 
               <!-- Modify Settings Gear -->

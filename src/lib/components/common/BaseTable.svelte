@@ -64,16 +64,11 @@ let columnWidths = $state<Record<string, number>>({});
 let currentPage = $state(1);
 
 onMount(() => {
-  try {
-    const savedWidths = localStorage.getItem("ldnoob_table_column_widths");
-    if (savedWidths) {
-      columnWidths = JSON.parse(savedWidths);
-    }
-  } catch {
-    // fallback
-  }
-
+  // Reset columns visibility if any core column is missing
   columns.forEach((col) => {
+    if (col.visible === undefined) {
+      col.visible = true;
+    }
     if (!columnWidths[col.key]) {
       columnWidths[col.key] = col.width || 120;
     }
@@ -88,14 +83,6 @@ onMount(() => {
   window.addEventListener("click", handleOutsideClick);
   return () => window.removeEventListener("click", handleOutsideClick);
 });
-
-function saveWidths() {
-  try {
-    localStorage.setItem("ldnoob_table_column_widths", JSON.stringify(columnWidths));
-  } catch {
-    // ignore
-  }
-}
 
 // Visible Columns
 let visibleColumns = $derived(columns.filter((c) => c.visible));
@@ -132,7 +119,9 @@ function toggleSelect(key: any) {
   onUpdateSelectedKeys?.(selectedKeys);
 }
 
+// -------------------------------------------------------------
 // Drag-to-select and Click Select Logic
+// -------------------------------------------------------------
 let isDragging = $state(false);
 let dragAnchorIndex = $state<number | null>(null);
 let lastClickedIndex = $state<number | null>(null);
@@ -208,7 +197,9 @@ function handleRowClickInternal(event: MouseEvent, item: any, index: number) {
   lastClickedIndex = index;
 }
 
+// -------------------------------------------------------------
 // Column Resizing Logic
+// -------------------------------------------------------------
 let isResizing = false;
 let startX = 0;
 let startWidth = 0;
@@ -237,7 +228,6 @@ function stopResize() {
   activeResizeCol = "";
   document.body.style.userSelect = "";
   window.removeEventListener("mousemove", handleResize);
-  saveWidths();
 }
 
 // Column Visibility Controls
@@ -260,11 +250,11 @@ function hideEmptyColumns() {
 }
 </script>
 
-<div class="flex-1 flex flex-col min-h-0 overflow-hidden">
+<div class="flex-1 flex flex-col min-h-0 overflow-hidden border border-border-default rounded-2xl bg-bg-panel shadow-xs">
   <!-- Scrollable Table Container -->
   <div class="overflow-x-auto overflow-y-auto flex-1 min-h-[280px]">
     <table
-      class="w-full min-h-full border-collapse text-left text-[11px] text-text-default table-fixed"
+      class="min-w-full w-max border-collapse text-left text-[11px] text-text-default font-sans"
     >
       <!-- Table Header (matching D:\ldremote) -->
       <thead>
@@ -273,7 +263,7 @@ function hideEmptyColumns() {
         >
           <!-- Checkbox Header (Sticky Left) -->
           <th
-            class="p-0 w-[40px] min-w-[40px] max-w-[40px] sticky left-0 z-10 bg-bg-card"
+            class="p-0 w-[42px] min-w-[42px] max-w-[42px] sticky left-0 z-50 bg-bg-card border-r border-border-default/45"
           >
             <div class="flex items-center justify-center py-2.5 w-full h-full">
               <input
@@ -288,20 +278,20 @@ function hideEmptyColumns() {
 
           <!-- Dynamic Column Headers -->
           {#each visibleColumns as col (col.key)}
-            {@const width = (columnWidths[col.key] || col.width || 100) + "px"}
+            {@const width = (columnWidths[col.key] || col.width || 120) + "px"}
             <th
-              class="py-2.5 px-3 border-r border-border-default/45 relative select-none bg-bg-card {col.key ===
+              class="py-2.5 px-3 border-r border-border-default/45 relative select-none bg-bg-card text-[10.5px] font-extrabold {col.key ===
               'index'
                 ? 'text-center'
                 : ''} {col.key === 'actions'
                 ? 'sticky right-0 z-50 shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.25)]'
                 : ''}"
-              style="width: {width}; min-width: {width}; maxWidth: {width};"
+              style="width: {width}; min-width: {width}; max-width: {width};"
             >
               {#if col.key === "actions"}
                 <div
                   bind:this={columnSelectorRef}
-                  class="flex items-center justify-between gap-1.5 max-w-[150px] mx-auto w-full h-full relative"
+                  class="flex items-center justify-between gap-1.5 w-full h-full relative"
                 >
                   <span class="flex-1 text-center">{col.label}</span>
                   <button
@@ -316,7 +306,7 @@ function hideEmptyColumns() {
                     title="Custom Columns"
                   >
                     <svg
-                      class="w-4 h-4"
+                      class="w-3.5 h-3.5"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -335,7 +325,7 @@ function hideEmptyColumns() {
                     <!-- svelte-ignore a11y_click_events_have_key_events -->
                     <!-- svelte-ignore a11y_no_static_element_interactions -->
                     <div
-                      class="absolute right-0 top-full mt-2 w-52 rounded-xl border border-border-default bg-bg-card shadow-2xl z-50 text-left normal-case tracking-normal p-2"
+                      class="absolute right-0 top-full mt-2 w-56 rounded-xl border border-border-default bg-bg-card shadow-2xl z-50 text-left normal-case tracking-normal p-2.5 font-sans"
                       onclick={(e) => e.stopPropagation()}
                     >
                       <div
@@ -370,7 +360,7 @@ function hideEmptyColumns() {
                         {#each columns as c}
                           {#if c.key !== "actions"}
                             <label
-                              class="flex items-center justify-between px-2 py-1 rounded hover:bg-bg-card-hover text-text-default text-[11px] font-medium cursor-pointer {c.canHide
+                              class="flex items-center justify-between px-2 py-1 rounded-lg hover:bg-bg-card-hover text-text-default text-[11px] font-medium cursor-pointer {c.canHide
                                 ? ''
                                 : 'opacity-40 cursor-not-allowed'}"
                             >
@@ -428,7 +418,7 @@ function hideEmptyColumns() {
                 >
                   <Icon name="cube" size={28} class="opacity-40" />
                   <p class="font-bold text-xs text-text-default">
-                    No items found.
+                    No emulator instances found.
                   </p>
                 </div>
               </td>
@@ -440,7 +430,7 @@ function hideEmptyColumns() {
             {@const isSelected = selectedKeys.includes(item[itemKey])}
             <tr
               id="table-row-{rowKey}"
-              class="group border-0 border-border-default/20 transition-all duration-150 ease-out {isSelected
+              class="group border-b border-border-default/20 transition-all duration-150 ease-out {isSelected
                 ? 'bg-[#00b578]/12 text-text-hover shadow-[inset_3px_0_0_0_#00b578]'
                 : 'hover:bg-bg-card-hover text-text-default'}"
               onclick={(e) => handleRowClickInternal(e, item, index)}
@@ -455,13 +445,13 @@ function hideEmptyColumns() {
               <!-- svelte-ignore a11y_click_events_have_key_events -->
               <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
               <td
-                class="p-0 w-[40px] min-w-[40px] max-w-[40px] sticky left-0 z-10 transition-colors duration-150 {isSelected
+                class="p-0 w-[42px] min-w-[42px] max-w-[42px] sticky left-0 z-30 transition-colors duration-150 border-r border-border-default/20 {isSelected
                   ? 'bg-[color-mix(in_srgb,#00b578_12%,var(--color-bg-panel))] group-hover:bg-[color-mix(in_srgb,#00b578_12%,var(--color-bg-card-hover))]'
                   : 'bg-bg-panel group-hover:bg-bg-card-hover'}"
                 onclick={(e) => e.stopPropagation()}
                 onmousedown={(e) => e.stopPropagation()}
               >
-                <div class="flex items-center justify-center py-2.5 w-full h-full">
+                <div class="flex items-center justify-center py-2 w-full h-full">
                   <input
                     type="checkbox"
                     checked={isSelected}
@@ -479,21 +469,21 @@ function hideEmptyColumns() {
               {:else}
                 {#each visibleColumns as col}
                   {@const width =
-                    (columnWidths[col.key] || col.width || 100) + "px"}
+                    (columnWidths[col.key] || col.width || 120) + "px"}
                   <td
-                    class="py-2.5 px-3 border-r border-border-default/20 transition-colors duration-150 {col.key ===
+                    class="py-2 px-3 border-r border-border-default/20 transition-colors duration-150 {col.key ===
                     'index'
                       ? 'text-center font-mono'
                       : ''} {col.key === 'name'
                       ? 'font-bold text-text-hover'
                       : ''} {col.key === 'actions'
-                      ? `sticky right-0 z-10 shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.25)] group-hover:z-30 focus-within:z-30 ${
+                      ? `sticky right-0 z-30 shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.25)] group-hover:z-30 focus-within:z-30 ${
                           isSelected
                             ? 'bg-[color-mix(in_srgb,#00b578_12%,var(--color-bg-panel))] group-hover:bg-[color-mix(in_srgb,#00b578_12%,var(--color-bg-card-hover))]'
                             : 'bg-bg-panel group-hover:bg-bg-card-hover'
                         }`
                       : ''}"
-                    style="width: {width}; min-width: {width}; maxWidth: {width};"
+                    style="width: {width}; min-width: {width}; max-width: {width};"
                   >
                     {#if renderCell}
                       {@render renderCell(col.key, item, index, col)}
@@ -513,14 +503,14 @@ function hideEmptyColumns() {
   <!-- Pagination Footer (matching D:\ldremote) -->
   {#if paginate && isConnected && totalItems > 0}
     <footer
-      class="shrink-0 flex flex-col lg:flex-row items-center justify-between border-t border-border-default/45 px-5 py-4 lg:py-3.5 select-none z-10 relative bg-bg-panel gap-4 lg:gap-0 font-sans"
+      class="shrink-0 flex flex-col lg:flex-row items-center justify-between border-t border-border-default px-4 py-2.5 select-none z-10 relative bg-bg-panel gap-3 font-sans text-xs"
     >
       <!-- Details -->
       <div
         class="flex items-center select-none w-full lg:w-auto justify-center lg:justify-start"
       >
         <div
-          class="h-9 px-4 rounded-xl border border-border-default bg-bg-card text-xs text-text-muted font-medium flex items-center gap-2 shadow-xs"
+          class="h-8 px-3 rounded-xl border border-border-default bg-bg-card text-xs text-text-muted font-medium flex items-center gap-2 shadow-xs"
         >
           <span class="relative flex h-2 w-2 mr-0.5">
             <span
@@ -544,7 +534,7 @@ function hideEmptyColumns() {
       <div class="flex items-center gap-3">
         <select
           bind:value={pageSize}
-          class="h-9 px-3 rounded-xl border border-border-default bg-bg-card text-xs text-text-hover font-mono focus:outline-none focus:border-[#00b578] cursor-pointer"
+          class="h-8 px-2.5 rounded-xl border border-border-default bg-bg-card text-xs text-text-hover font-mono focus:outline-none focus:border-[#00b578] cursor-pointer"
         >
           {#each pageSizes as size}
             <option value={size}>{size} / page</option>
@@ -556,7 +546,7 @@ function hideEmptyColumns() {
             type="button"
             disabled={currentPage <= 1}
             onclick={() => (currentPage = Math.max(1, currentPage - 1))}
-            class="h-9 px-3 rounded-xl border border-border-default bg-bg-card text-text-default hover:text-text-hover hover:bg-bg-card-hover disabled:opacity-40 cursor-pointer"
+            class="h-8 px-3 rounded-xl border border-border-default bg-bg-card text-text-default hover:text-text-hover hover:bg-bg-card-hover disabled:opacity-40 cursor-pointer"
           >
             Prev
           </button>
@@ -567,7 +557,7 @@ function hideEmptyColumns() {
             type="button"
             disabled={currentPage >= totalPages}
             onclick={() => (currentPage = Math.min(totalPages, currentPage + 1))}
-            class="h-9 px-3 rounded-xl border border-border-default bg-bg-card text-text-default hover:text-text-hover hover:bg-bg-card-hover disabled:opacity-40 cursor-pointer"
+            class="h-8 px-3 rounded-xl border border-border-default bg-bg-card text-text-default hover:text-text-hover hover:bg-bg-card-hover disabled:opacity-40 cursor-pointer"
           >
             Next
           </button>
