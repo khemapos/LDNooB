@@ -3,7 +3,7 @@ import { accountsStore } from "$lib/stores/accounts.svelte";
 import { proxiesStore } from "$lib/stores/proxies.svelte";
 import type { FacebookAccount } from "$lib/types";
 import BaseModal from "../common/BaseModal.svelte";
-import BaseTable, { type TableColumn } from "../common/BaseTable.svelte";
+import BaseTable, { type ColumnConfig } from "../common/BaseTable.svelte";
 import ProxyInjectModal from "../modals/ProxyInjectModal.svelte";
 import Icon from "../ui/Icon.svelte";
 
@@ -11,13 +11,13 @@ let showImportModal = $state(false);
 let showProxyModal = $state(false);
 let importInput = $state("");
 
-const columns: TableColumn[] = [
-  { key: "uid", label: "UID / Account ID", width: "w-44" },
-  { key: "status", label: "Account Status", width: "w-32", align: "center" },
-  { key: "proxy", label: "Assigned Proxy", width: "w-52" },
-  { key: "twoFA", label: "2FA Secret", width: "w-40" },
-  { key: "actions", label: "Actions", width: "w-24", align: "right" },
-];
+let columns = $state<ColumnConfig[]>([
+  { key: "uid", label: "UID / Account ID", visible: true, canHide: false, width: 170 },
+  { key: "status", label: "Status", visible: true, canHide: true, width: 120, align: "center" },
+  { key: "proxy", label: "Assigned Proxy", visible: true, canHide: true, width: 200 },
+  { key: "twoFA", label: "2FA Secret", visible: true, canHide: true, width: 140 },
+  { key: "actions", label: "Actions", visible: true, canHide: false, width: 100, align: "right" },
+]);
 
 function handleImport() {
   if (!importInput.trim()) return;
@@ -61,46 +61,62 @@ function handleImport() {
   <!-- Accounts Table -->
   <div class="flex-1 overflow-hidden">
     <BaseTable
-      {columns}
+      bind:columns
       items={accountsStore.accounts}
+      bind:selectedKeys={accountsStore.selectedUids}
       itemKey="uid"
     >
-      {#snippet rowSnippet(item: FacebookAccount)}
+      {#snippet rowSnippet(item: FacebookAccount, isSelected: boolean)}
         <!-- UID -->
-        <td class="px-3 py-2 font-mono font-bold text-slate-900 dark:text-white">
-          {item.uid}
-        </td>
+        {#if columns.find(c => c.key === "uid")?.visible}
+          <td class="py-2.5 px-3 font-mono font-bold text-slate-900 dark:text-white border-r border-slate-100 dark:border-white/[0.04]">
+            {item.uid}
+          </td>
+        {/if}
 
         <!-- Status -->
-        <td class="px-3 py-2 text-center">
-          <span
-            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20"
-          >
-            {item.status}
-          </span>
-        </td>
+        {#if columns.find(c => c.key === "status")?.visible}
+          <td class="py-2.5 px-3 text-center border-r border-slate-100 dark:border-white/[0.04]">
+            <span
+              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20"
+            >
+              {item.status}
+            </span>
+          </td>
+        {/if}
 
         <!-- Proxy -->
-        <td class="px-3 py-2 text-xs font-mono text-slate-600 dark:text-slate-400">
-          {item.proxy || "Direct (No Proxy)"}
-        </td>
+        {#if columns.find(c => c.key === "proxy")?.visible}
+          <td class="py-2.5 px-3 text-xs font-mono text-slate-600 dark:text-slate-400 border-r border-slate-100 dark:border-white/[0.04]">
+            {item.proxy || "Direct (No Proxy)"}
+          </td>
+        {/if}
 
         <!-- 2FA -->
-        <td class="px-3 py-2 text-xs font-mono text-slate-500 dark:text-slate-400">
-          {item.twoFA ? "••••••••" : "-"}
-        </td>
+        {#if columns.find(c => c.key === "twoFA")?.visible}
+          <td class="py-2.5 px-3 text-xs font-mono text-slate-500 dark:text-slate-400 border-r border-slate-100 dark:border-white/[0.04]">
+            {item.twoFA ? "••••••••" : "-"}
+          </td>
+        {/if}
 
         <!-- Actions -->
-        <td class="px-3 py-2 text-right">
-          <button
-            type="button"
-            title="Delete Account"
-            onclick={() => accountsStore.removeAccount(item.uid)}
-            class="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-500/10 transition-colors cursor-pointer"
+        {#if columns.find(c => c.key === "actions")?.visible}
+          <td
+            class="py-2.5 px-3 text-right sticky right-0 z-10 shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.1)] dark:shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.4)] {isSelected
+              ? 'bg-blue-500/[0.06] dark:bg-[#101520]'
+              : 'bg-white dark:bg-[#0c0e15] group-hover:bg-slate-50 dark:group-hover:bg-[#12141f]'}"
+            onclick={(e) => e.stopPropagation()}
           >
-            <Icon name="trash" size={13} />
-          </button>
-        </td>
+            <button
+              type="button"
+              title="Delete Account"
+              onclick={() => accountsStore.removeAccount(item.uid)}
+              class="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-500/10 transition-colors cursor-pointer"
+            >
+              <Icon name="trash" size={13} />
+            </button>
+          </td>
+        {/if}
       {/snippet}
     </BaseTable>
   </div>
