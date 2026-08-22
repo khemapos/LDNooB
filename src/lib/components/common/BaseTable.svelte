@@ -255,7 +255,7 @@ function hideEmptyColumns() {
   <!-- Scrollable Table Container -->
   <div class="overflow-x-auto overflow-y-auto flex-1 min-h-[280px]">
     <table
-      class="w-full min-h-full border-collapse text-left text-[11px] text-text-default table-fixed"
+      class="w-full border-collapse text-left text-[11px] text-text-default table-fixed"
     >
       <!-- Table Header (matching D:\ldremote) -->
       <thead>
@@ -431,7 +431,7 @@ function hideEmptyColumns() {
             {@const isSelected = selectedKeys.includes(item[itemKey])}
             <tr
               id="table-row-{rowKey}"
-              class="group border-b transition-all duration-150 ease-out {isSelected
+              class="group h-10 border-b transition-all duration-150 ease-out {isSelected
                 ? 'bg-[#00b578]/12 text-text-hover border-[#00b578]/25 shadow-[inset_3px_0_0_0_#00b578]'
                 : 'hover:bg-bg-card-hover text-text-default border-border-default/20'}"
               onclick={(e) => handleRowClickInternal(e, item, index)}
