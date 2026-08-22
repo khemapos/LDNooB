@@ -44,6 +44,7 @@ pub fn run() {
             check_proxy,
             get_host_ip,
             // Automation & ADB
+            read_binary_file,
             run_adb_command,
             start_app,
             human_swipe,

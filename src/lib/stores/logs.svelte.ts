@@ -1,8 +1,19 @@
 import type { LogEntry } from "$lib/types";
 
+export type { LogEntry };
+
 class LogsStore {
   entries = $state<LogEntry[]>([]);
-  maxEntries = $state(200);
+  maxEntries = $state(300);
+  isPanelOpen = $state(true);
+
+  togglePanel() {
+    this.isPanelOpen = !this.isPanelOpen;
+  }
+
+  setPanelOpen(open: boolean) {
+    this.isPanelOpen = open;
+  }
 
   add(level: LogEntry["level"], category: string, message: string) {
     const entry: LogEntry = {
@@ -12,7 +23,7 @@ class LogsStore {
       category,
       message,
     };
-    this.entries = [entry, ...this.entries.slice(0, this.maxEntries - 1)];
+    this.entries = [...this.entries.slice(-this.maxEntries), entry];
   }
 
   info(category: string, message: string) {

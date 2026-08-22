@@ -1,6 +1,12 @@
 use crate::domains::emulator::run_ldconsole_cmd;
 
 #[tauri::command]
+pub fn read_binary_file(file_path: String) -> Result<Vec<u8>, String> {
+    let path = std::path::Path::new(&file_path);
+    std::fs::read(path).map_err(|e| format!("Failed to read binary file: {}", e))
+}
+
+#[tauri::command]
 pub async fn run_adb_command(
     ldplayer_dir: String,
     index: i32,

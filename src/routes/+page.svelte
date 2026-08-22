@@ -12,6 +12,7 @@ import { settingsStore } from "$lib/stores/settings.svelte";
 import type { ActiveTab } from "$lib/types";
 
 let activeTab = $state<ActiveTab>("profiles");
+let showActivityLog = $state(true);
 
 onMount(async () => {
   await settingsStore.init();
@@ -19,7 +20,7 @@ onMount(async () => {
 });
 </script>
 
-<main class="flex-1 w-full h-full flex flex-col p-4 gap-3 overflow-hidden select-none">
+<main class="flex-1 w-full h-full flex flex-col p-3 gap-3 overflow-hidden select-none">
   <!-- Top Navigation Bar -->
   <div class="flex items-center justify-between shrink-0">
     <NavigationTabs
@@ -29,7 +30,7 @@ onMount(async () => {
   </div>
 
   <!-- Active Viewport Container -->
-  <div class="flex-1 overflow-hidden flex flex-col">
+  <div class="flex-1 overflow-hidden flex flex-col min-h-0">
     {#if activeTab === "profiles"}
       <ProfilesView />
     {:else if activeTab === "accounts"}
