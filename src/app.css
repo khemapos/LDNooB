@@ -108,7 +108,21 @@ textarea,
 }
 
 .custom-checkbox:checked {
-  background: linear-gradient(135deg, #26d094, #00b578) !important;
+  background-color: #00b578 !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='white'%3E%3Cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3E%3C/svg%3E") !important;
+  background-size: 100% 100% !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  border-color: transparent !important;
+  box-shadow: 0 1px 3px rgba(0, 181, 120, 0.3) !important;
+}
+
+.custom-checkbox:indeterminate {
+  background-color: #00b578 !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='white'%3E%3Cpath fill-rule='evenodd' d='M4 8a1 1 0 011-1h6a1 1 0 110 2H5a1 1 0 01-1-1z' clip-rule='evenodd'/%3E%3C/svg%3E") !important;
+  background-size: 100% 100% !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
   border-color: transparent !important;
   box-shadow: 0 1px 3px rgba(0, 181, 120, 0.3) !important;
 }
