@@ -3,7 +3,7 @@ export * from "./emulator";
 export * from "./proxy";
 export * from "./workflow";
 
-export type ActiveTab = "profiles" | "accounts" | "workflows" | "inspector" | "settings";
+export type ActiveTab = "profiles" | "accounts" | "settings";
 
 export interface LogEntry {
   id: string;

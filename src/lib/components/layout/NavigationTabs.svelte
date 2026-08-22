@@ -18,8 +18,6 @@ const tabs: { id: ActiveTab; label: string; icon: any; badge?: number }[] = $der
     badge: emulatorsStore.instances.length,
   },
   { id: "accounts", label: "Accounts", icon: "users" },
-  { id: "workflows", label: "Workflows", icon: "sparkles" },
-  { id: "inspector", label: "Hierarchy Inspector", icon: "eye" },
   { id: "settings", label: "Settings", icon: "settings" },
 ]);
 
