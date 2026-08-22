@@ -58,3 +58,4 @@
 - **[2026-08-22]**: Removed window size dimensions pill from WindowBar for a clean, minimalist titlebar layout
 - **[2026-08-22]**: Implemented sleek BottomBar (StatusBar) component in src/lib/components/layout/BottomBar.svelte displaying live status dot, Tauri v2 / Svelte 5 badge, resolution telemetry, and UTF-8 encoding
 - **[2026-08-22]**: Initialized Git repository, configured .gitignore, created public GitHub repository at https://github.com/khemapos/LDNooB, and pushed initial codebase to main branch
+- **[2026-08-22]**: Updated README.md with comprehensive badges, architecture diagrams, tech stack breakdown, setup guide, and CLI scripts
