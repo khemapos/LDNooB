@@ -1,0 +1,59 @@
+# Agent Diary & Session Journal
+
+## Entries
+
+### 2026-08-21: Project Initialization & Modernization
+- **Action**: Configured Tailwind CSS v4 with `@tailwindcss/vite`.
+- **Action**: Created root layout and removed all legacy custom CSS / `<style>` tags.
+- **Action**: Built atomic UI library in `src/lib/components/ui/` (`Button.svelte`, `Input.svelte`, `Card.svelte`, `Badge.svelte`).
+- **Action**: Built feature components (`BrandLogo`, `LogoGrid`, `Header`, `GreetCard`, `TechStackCard`, `Footer`).
+- **Action**: Initialized project-local MemPalace in `.mempalace/` and created agent skills in `.agents/skills/`.
+- **Verification**: `bun run check` and `bun run build` completed with 0 warnings and 0 errors.
+
+- **[2026-08-21]**: Verified complete stack: Svelte 5, Tailwind v4, Rust backend, and MemPalace CLI
+- **[2026-08-21]**: Implemented deep-reasoning agent skill with cognitive checklists and trade-off matrices
+- **[2026-08-21]**: Redesigned custom frameless WindowBar with native controls, drag regions, and Command Palette
+- **[2026-08-21]**: Cleared all demo UI data; simplified WindowBar to only app logo and 3 window buttons
+- **[2026-08-21]**: Applied Deep Titanium & Graphite theme to layout, WindowBar, and UI components
+- **[2026-08-21]**: Configured standard default window dimensions: 1024x720 (min 700x500, centered, resizable)
+- **[2026-08-21]**: Generated custom desktop app icons across all resolutions (.ico, .icns, .png, .svg)
+- **[2026-08-21]**: Implemented dynamic TabBar header with Titanium styling, tab switching, creation, and close actions
+- **[2026-08-21]**: Redesigned TabBar into unified Chrome/Arc/Zed style single titlebar with floating pill tabs and vector icons
+- **[2026-08-21]**: Removed Add New Tab (+) button from unified WindowBar
+- **[2026-08-21]**: Implemented reusable typed SVG Icon component (Icon.svelte) replacing all raw emoji/string icons
+- **[2026-08-21]**: Implemented dry-pattern agent skill and updated AGENTS.md rules
+- **[2026-08-21]**: Implemented 5 new agent skills (clean-architecture-solid, keyboard-first-ux, performance-profiler, secure-ipc-guardian, test-engineer) and registered in AGENTS.md and MemPalace
+- **[2026-08-21]**: Implemented full desktop suite: Rust system telemetry commands, reactive AppState runes, interactive Dashboard, Editor, and Terminal views, StatusBar, and Command Palette
+- **[2026-08-21]**: Cleared page canvas and state demo data; all tabs now open to a clean empty slate
+- **[2026-08-21]**: Fixed tab jitter/shake on switch by unifying font-weight, fixing close button geometry, and switching from transition-all to transition-colors
+- **[2026-08-21]**: Implemented dynamic Theme Mode Switcher in bottom-right status bar with Titanium, Midnight, and Light presets and localStorage persistence
+- **[2026-08-21]**: Simplified theme system to strictly Dark and Light mode toggle with localStorage persistence
+- **[2026-08-21]**: Connected dynamic CSS variable theme engine in app.css and synchronized with document.documentElement data-theme attribute
+- **[2026-08-21]**: Redesigned active tab with emerald neon glow, luminescent active indicator dot, and crisp typography
+- **[2026-08-21]**: Replaced Command Palette with an interactive Activity Log modal and live session event tracking
+- **[2026-08-21]**: Centered the floating tabbar in WindowBar with balanced left and right header regions
+- **[2026-08-21]**: Configured titlebar with sole centered 'Emulator' tab and removed secondary tabs
+- **[2026-08-21]**: Implemented Settings modal with custom LDPlayer installation directory configuration (default D:\LDPlayer), executable detection, and Rust IPC validation
+- **[2026-08-21]**: Removed Healthy and Heap metrics from bottom-left status bar, leaving a clean Emulator workspace indicator
+- **[2026-08-21]**: Removed MemPalace trigger button from bottom status bar
+- **[2026-08-21]**: Implemented LDPlayer emulator instance listing, CLI status inspection (list2), launch, stop, and reboot controls
+- **[2026-08-21]**: Implemented multi-drive Auto Detect feature for LDPlayer with automatic Windows filesystem scanning and instant UI synchronization
+- **[2026-08-22]**: Implemented comprehensive LDPlayer listing and lifecycle management architecture modeled after DESKTOP_LDRemote with multi-select, RAM/disk telemetry, device models, clone, rename, and add capabilities
+- **[2026-08-22]**: Redesigned Emulator view with high-contrast emerald buttons, cohesive glass containers, sticky styled headers, custom checkboxes, and balanced typography
+- **[2026-08-22]**: Fully aligned Table UI, multi-selection mechanics, and toolbar styling with DESKTOP_LDRemote BaseTable specifications
+- **[2026-08-22]**: Fixed table row vertical height stretching by removing min-h-full on table element and setting compact 40px row heights with top-aligned tbody
+- **[2026-08-22]**: Fixed LDPlayer instance launch by setting executable parent directory as current working directory and resolving ldconsole.exe inside LDPlayer14/LDPlayer9 subdirectories
+- **[2026-08-22]**: Refactored monolithic Rust backend into feature modules; preserved all Tauri IPC names, added canonical LDPlayer path validation, and expanded Rust coverage from 5 to 10 passing tests
+- **[2026-08-22]**: Configured and verified Tailwind CSS v4 pipeline with Bun and @tailwindcss/vite; modernized base styling and +layout.svelte with Svelte 5 runes
+- **[2026-08-22]**: Fixed GNU MinGW ld linker export ordinal overflow (91021 > 65535) by updating crate-type to ["rlib"] in Cargo.toml
+- **[2026-08-22]**: Redesigned frameless WindowBar with deep graphite titanium glassmorphism, native window controls (minimize, maximize/restore toggle, close), drag region, double-click maximize, and keyboard-first Command Palette (Ctrl+K)
+- **[2026-08-22]**: Implemented reactive Light and Dark theme mode system with Svelte 5 runes ThemeStore, localStorage persistence, system preference auto-detection, and WindowBar / Command Palette theme toggles
+- **[2026-08-22]**: Overhauled dark mode color palette from washed-out slate to a luxury obsidian/charcoal aesthetic (#08090d canvas, #0c0d13 window bar, #0e1018 glass cards, hairline white/8% borders, and electric cyan/blue gradient accents)
+- **[2026-08-22]**: Updated application branding and casing to **LDNooB** across tauri.conf.json, WindowBar, CommandPalette, app.html, and page views
+- **[2026-08-22]**: Resolved window maximize failure by granting explicit window ACL permissions in capabilities/default.json, enabling resizable in tauri.conf.json, adding native Rust window commands, and stopping event propagation on controls
+- **[2026-08-22]**: Implemented dynamic window sizing architecture: reactive Svelte 5 windowStore, live width × height resolution badge in WindowBar, Command Palette preset resizing actions, and Rust IPC commands (app_set_window_size, app_get_window_size)
+- **[2026-08-22]**: Configured default desktop window width to 1280px (1280 × 720) in tauri.conf.json and synchronized with windowStore initialization
+- **[2026-08-22]**: Removed demo starter greeting card and placeholder controls from +page.svelte, establishing a clean workspace canvas
+- **[2026-08-22]**: Removed CommandPalette component, search trigger, and hotkey listeners from WindowBar and codebase per request, leaving a streamlined titlebar header
+- **[2026-08-22]**: Removed window size dimensions pill from WindowBar for a clean, minimalist titlebar layout
+- **[2026-08-22]**: Implemented sleek BottomBar (StatusBar) component in src/lib/components/layout/BottomBar.svelte displaying live status dot, Tauri v2 / Svelte 5 badge, resolution telemetry, and UTF-8 encoding

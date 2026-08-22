@@ -1,0 +1,122 @@
+{
+  "name": "ldnoob-palace",
+  "version": "1.0.0",
+  "description": "Spatial long-term memory palace for ldnoob Tauri + Svelte 5 + Tailwind v4 project",
+  "created": "2026-08-21",
+  "wings": [
+    {
+      "id": "architecture",
+      "name": "System Architecture Wing",
+      "rooms": [
+        {
+          "id": "tauri-backend",
+          "name": "Tauri v2 & Rust IPC Room",
+          "path": "wings/architecture/tauri-backend.md"
+        },
+        {
+          "id": "svelte-frontend",
+          "name": "Svelte 5 & Components Room",
+          "path": "wings/architecture/svelte-frontend.md"
+        },
+        {
+          "id": "tailwind-styling",
+          "name": "Tailwind CSS v4 Engine Room",
+          "path": "wings/architecture/tailwind-styling.md"
+        },
+        {
+          "id": "tooling-bun",
+          "name": "Bun & Tooling Room",
+          "path": "wings/architecture/tooling-bun.md"
+        }
+      ]
+    },
+    {
+      "id": "skills",
+      "name": "Agent Skills & Cognitive Standards Wing",
+      "rooms": [
+        {
+          "id": "deep-reasoning",
+          "name": "Deep Reasoning & Critical Thinking",
+          "path": "../.agents/skills/deep-reasoning/SKILL.md"
+        },
+        {
+          "id": "dry-pattern",
+          "name": "DRY Architecture & SSOT Standards",
+          "path": "../.agents/skills/dry-pattern/SKILL.md"
+        },
+        {
+          "id": "clean-architecture-solid",
+          "name": "Clean Architecture & SOLID Principles",
+          "path": "../.agents/skills/clean-architecture-solid/SKILL.md"
+        },
+        {
+          "id": "component-generator",
+          "name": "Svelte 5 & Tailwind v4 Component Generator",
+          "path": "../.agents/skills/component-generator/SKILL.md"
+        },
+        {
+          "id": "keyboard-first-ux",
+          "name": "Keyboard-First UX & Shortcuts",
+          "path": "../.agents/skills/keyboard-first-ux/SKILL.md"
+        },
+        {
+          "id": "mempalace",
+          "name": "Spatial Long-Term Memory Palace System",
+          "path": "../.agents/skills/mempalace/SKILL.md"
+        },
+        {
+          "id": "performance-profiler",
+          "name": "Performance Profiling & Budgets",
+          "path": "../.agents/skills/performance-profiler/SKILL.md"
+        },
+        {
+          "id": "secure-ipc-guardian",
+          "name": "Secure IPC & Capability Hardening",
+          "path": "../.agents/skills/secure-ipc-guardian/SKILL.md"
+        },
+        {
+          "id": "tauri-dev",
+          "name": "Tauri v2 Desktop Development & Standards",
+          "path": "../.agents/skills/tauri-dev/SKILL.md"
+        },
+        {
+          "id": "test-engineer",
+          "name": "Automated Testing & QA Verification",
+          "path": "../.agents/skills/test-engineer/SKILL.md"
+        }
+      ]
+    },
+    {
+      "id": "decisions",
+      "name": "Decisions & ADR Wing",
+      "rooms": [
+        {
+          "id": "adr-001",
+          "name": "Pure Tailwind v4 & No Custom CSS",
+          "path": "wings/decisions/adr-001-pure-tailwind.md"
+        },
+        {
+          "id": "adr-002",
+          "name": "Component-Driven Svelte 5 Runes",
+          "path": "wings/decisions/adr-002-svelte-runes.md"
+        },
+        {
+          "id": "adr-003",
+          "name": "Feature-Modular Rust Backend",
+          "path": "wings/decisions/adr-003-feature-modular-rust-backend.md"
+        }
+      ]
+    },
+    {
+      "id": "diary",
+      "name": "Agent Diary & Journal Wing",
+      "rooms": [
+        {
+          "id": "session-journal",
+          "name": "Chronological Development Log",
+          "path": "wings/diary/journal.md"
+        }
+      ]
+    }
+  ]
+}
