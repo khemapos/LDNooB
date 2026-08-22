@@ -432,7 +432,7 @@ function hideEmptyColumns() {
             <tr
               id="table-row-{rowKey}"
               class="group h-10 border-0 transition-all duration-150 ease-out {isSelected
-                ? 'bg-[#00b578]/12 text-text-hover shadow-[inset_3px_0_0_0_#00b578]'
+                ? 'bg-[#00b578]/12 text-text-hover'
                 : 'hover:bg-bg-card-hover text-text-default'}"
               onclick={(e) => handleRowClickInternal(e, item, index)}
               onmousedown={(e) => handleRowMouseDownInternal(e, item, index)}
@@ -447,7 +447,7 @@ function hideEmptyColumns() {
               <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
               <td
                 class="p-0 w-[40px] min-w-[40px] max-w-[40px] sticky left-0 z-30 transition-colors duration-150 border-r border-b border-border-default/20 {isSelected
-                  ? 'bg-[color-mix(in_srgb,#00b578_12%,var(--color-bg-panel))] group-hover:bg-[color-mix(in_srgb,#00b578_12%,var(--color-bg-card-hover))]'
+                  ? 'bg-[color-mix(in_srgb,#00b578_12%,var(--color-bg-panel))] group-hover:bg-[color-mix(in_srgb,#00b578_12%,var(--color-bg-card-hover))] shadow-[inset_3px_0_0_0_#00b578]'
                   : 'bg-bg-panel group-hover:bg-bg-card-hover'}"
                 onclick={(e) => e.stopPropagation()}
                 onmousedown={(e) => e.stopPropagation()}
