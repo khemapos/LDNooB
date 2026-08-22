@@ -3,8 +3,6 @@ import { emulatorsStore } from "$lib/stores/emulators.svelte";
 import type { Emulator } from "$lib/types";
 import BaseTable, { type ColumnConfig } from "../common/BaseTable.svelte";
 import ConfirmDialog from "../common/ConfirmDialog.svelte";
-import CustomButton from "../common/CustomButton.svelte";
-import CustomInput from "../common/CustomInput.svelte";
 import AdbTerminalModal from "../modals/AdbTerminalModal.svelte";
 import AddEmulatorModal from "../modals/AddEmulatorModal.svelte";
 import BulkRenameModal from "../modals/BulkRenameModal.svelte";
@@ -56,128 +54,177 @@ function openModify(emu: Emulator) {
 }
 </script>
 
-<div class="flex-1 flex flex-col h-full gap-3 overflow-hidden font-sans">
-  <!-- Top Command Toolbar -->
+<div class="flex-1 flex flex-col h-full gap-3 overflow-hidden font-sans select-none">
+  <!-- Top Command Toolbar (Modern & Premium) -->
   <div
-    class="flex flex-wrap items-center justify-between gap-3 p-3 bg-bg-panel border border-border-default rounded-2xl shadow-xs"
+    class="flex flex-wrap items-center justify-between gap-3 p-2.5 px-3.5 bg-bg-panel/95 backdrop-blur-md border border-border-default rounded-2xl shadow-xs shrink-0"
   >
-    <!-- Left: Batch Operations -->
+    <!-- Left: Primary & Batch Action Group -->
     <div class="flex items-center gap-2">
-      <!-- Primary New Instance Button (Brand Green) -->
-      <CustomButton
-        variant="primary"
-        size="md"
+      <!-- Primary New Instance Button (Emerald Gradient) -->
+      <button
+        type="button"
         onclick={() => (showAddModal = true)}
+        class="inline-flex items-center justify-center gap-1.5 h-8.5 px-4 rounded-xl text-xs font-bold text-white bg-gradient-to-b from-[#00c985] to-[#00b578] hover:from-[#00d78e] hover:to-[#00c07f] active:scale-[0.98] border border-[#00b578] shadow-[0_2px_10px_rgba(0,181,120,0.25),inset_0_1px_0_rgba(255,255,255,0.2)] transition-all cursor-pointer"
       >
-        <Icon name="plus" size={14} />
+        <Icon name="plus" size={13} />
         <span>New LDPlayer</span>
-      </CustomButton>
+      </button>
 
-      <div class="h-4 w-px bg-border-default mx-1"></div>
+      <div class="h-4.5 w-px bg-border-default/80 mx-0.5"></div>
 
-      <!-- Batch Actions -->
-      <CustomButton
-        variant="secondary"
-        size="sm"
-        disabled={emulatorsStore.selectedIndices.length === 0}
-        onclick={() => emulatorsStore.batchLaunch()}
-        class="text-[#00b578] hover:text-[#00b578]"
-      >
-        <Icon name="play" size={12} />
-        <span>Start ({emulatorsStore.selectedIndices.length})</span>
-      </CustomButton>
+      <!-- Batch Actions Cluster -->
+      <div class="flex items-center gap-1.5">
+        <!-- Batch Start -->
+        <button
+          type="button"
+          disabled={emulatorsStore.selectedIndices.length === 0}
+          onclick={() => emulatorsStore.batchLaunch()}
+          class="inline-flex items-center gap-1.5 h-8.5 px-3 rounded-xl text-xs font-semibold bg-bg-card hover:bg-bg-card-hover border border-border-default hover:border-[#00b578]/40 text-text-default hover:text-[#00b578] disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer active:scale-95 shadow-xs"
+          title="Launch selected emulators"
+        >
+          <Icon name="play" size={12} class="text-[#00b578]" />
+          <span>Start ({emulatorsStore.selectedIndices.length})</span>
+        </button>
 
-      <CustomButton
-        variant="secondary"
-        size="sm"
-        disabled={emulatorsStore.selectedIndices.length === 0}
-        onclick={() => emulatorsStore.batchQuit()}
-        class="text-[#ff4d4f] hover:text-[#ff4d4f]"
-      >
-        <Icon name="stop" size={12} />
-        <span>Close ({emulatorsStore.selectedIndices.length})</span>
-      </CustomButton>
+        <!-- Batch Stop -->
+        <button
+          type="button"
+          disabled={emulatorsStore.selectedIndices.length === 0}
+          onclick={() => emulatorsStore.batchQuit()}
+          class="inline-flex items-center gap-1.5 h-8.5 px-3 rounded-xl text-xs font-semibold bg-bg-card hover:bg-bg-card-hover border border-border-default hover:border-[#ff4d4f]/40 text-text-default hover:text-[#ff4d4f] disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer active:scale-95 shadow-xs"
+          title="Close selected emulators"
+        >
+          <Icon name="stop" size={12} class="text-[#ff4d4f]" />
+          <span>Close ({emulatorsStore.selectedIndices.length})</span>
+        </button>
 
-      <CustomButton
-        variant="secondary"
-        size="sm"
-        disabled={emulatorsStore.selectedIndices.length === 0}
-        onclick={() => (showBulkRenameModal = true)}
-      >
-        <Icon name="edit" size={12} />
-        <span>Rename</span>
-      </CustomButton>
+        <!-- Batch Rename -->
+        <button
+          type="button"
+          disabled={emulatorsStore.selectedIndices.length === 0}
+          onclick={() => (showBulkRenameModal = true)}
+          class="inline-flex items-center gap-1.5 h-8.5 px-3 rounded-xl text-xs font-semibold bg-bg-card hover:bg-bg-card-hover border border-border-default hover:border-border-hover text-text-muted hover:text-text-hover disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer active:scale-95 shadow-xs"
+          title="Bulk rename selected emulators"
+        >
+          <Icon name="edit" size={12} />
+          <span>Rename</span>
+        </button>
 
-      <CustomButton
-        variant="secondary"
-        size="sm"
-        onclick={() => emulatorsStore.sortWindows()}
-      >
-        <Icon name="sort" size={12} />
-        <span>Arrange Windows</span>
-      </CustomButton>
+        <!-- Arrange Windows -->
+        <button
+          type="button"
+          onclick={() => emulatorsStore.sortWindows()}
+          class="inline-flex items-center gap-1.5 h-8.5 px-3 rounded-xl text-xs font-semibold bg-bg-card hover:bg-bg-card-hover border border-border-default hover:border-border-hover text-text-muted hover:text-text-hover transition-all cursor-pointer active:scale-95 shadow-xs"
+          title="Automatically tile and arrange all running emulator windows"
+        >
+          <Icon name="sort" size={12} />
+          <span>Arrange Windows</span>
+        </button>
+      </div>
     </div>
 
-    <!-- Right: Filter & Search Controls -->
+    <!-- Right: Segmented Status Filter, Search, & Refresh -->
     <div class="flex items-center gap-2.5">
-      <!-- Status Segmented Control -->
+      <!-- Status Segmented Switcher -->
       <div
-        class="flex items-center p-0.5 bg-bg-app border border-border-default rounded-xl text-xs font-semibold"
+        class="flex items-center p-0.5 bg-bg-app border border-border-default rounded-xl text-xs font-semibold shadow-inner"
       >
         <button
           type="button"
           onclick={() => (emulatorsStore.filterStatus = "all")}
-          class="px-2.5 py-1 rounded-lg transition-all cursor-pointer {emulatorsStore.filterStatus ===
+          class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all cursor-pointer {emulatorsStore.filterStatus ===
           'all'
-            ? 'bg-bg-card text-[#00b578] shadow-xs'
+            ? 'bg-bg-card text-text-hover shadow-xs border border-border-default font-bold'
             : 'text-text-muted hover:text-text-hover'}"
         >
-          All ({emulatorsStore.instances.length})
+          <span>All</span>
+          <span
+            class="px-1.5 py-0.2 rounded-full text-[10px] font-mono {emulatorsStore.filterStatus ===
+            'all'
+              ? 'bg-bg-app text-[#00b578]'
+              : 'bg-bg-card text-text-muted'}"
+          >
+            {emulatorsStore.instances.length}
+          </span>
         </button>
+
         <button
           type="button"
           onclick={() => (emulatorsStore.filterStatus = "running")}
-          class="px-2.5 py-1 rounded-lg transition-all cursor-pointer {emulatorsStore.filterStatus ===
+          class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all cursor-pointer {emulatorsStore.filterStatus ===
           'running'
-            ? 'bg-bg-card text-[#00b578] shadow-xs'
+            ? 'bg-bg-card text-text-hover shadow-xs border border-border-default font-bold'
             : 'text-text-muted hover:text-text-hover'}"
         >
-          Running ({emulatorsStore.runningCount})
+          <span class="w-1.5 h-1.5 rounded-full bg-[#00b578] animate-pulse"></span>
+          <span>Running</span>
+          <span
+            class="px-1.5 py-0.2 rounded-full text-[10px] font-mono {emulatorsStore.filterStatus ===
+            'running'
+              ? 'bg-bg-app text-[#00b578]'
+              : 'bg-bg-card text-text-muted'}"
+          >
+            {emulatorsStore.runningCount}
+          </span>
         </button>
+
         <button
           type="button"
           onclick={() => (emulatorsStore.filterStatus = "stopped")}
-          class="px-2.5 py-1 rounded-lg transition-all cursor-pointer {emulatorsStore.filterStatus ===
+          class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all cursor-pointer {emulatorsStore.filterStatus ===
           'stopped'
-            ? 'bg-bg-card text-text-default shadow-xs'
+            ? 'bg-bg-card text-text-hover shadow-xs border border-border-default font-bold'
             : 'text-text-muted hover:text-text-hover'}"
         >
-          Stopped ({emulatorsStore.stoppedCount})
+          <span class="w-1.5 h-1.5 rounded-full bg-zinc-500"></span>
+          <span>Stopped</span>
+          <span
+            class="px-1.5 py-0.2 rounded-full text-[10px] font-mono {emulatorsStore.filterStatus ===
+            'stopped'
+              ? 'bg-bg-app text-text-default'
+              : 'bg-bg-card text-text-muted'}"
+          >
+            {emulatorsStore.stoppedCount}
+          </span>
         </button>
       </div>
 
       <!-- Search Input -->
-      <div class="w-48">
-        <CustomInput
+      <div class="relative flex items-center h-8.5 w-48 group">
+        <input
+          type="text"
           placeholder="Search emulators..."
           bind:value={emulatorsStore.searchQuery}
-          icon="search"
+          class="w-full h-8.5 pl-8 pr-7 text-xs font-medium rounded-xl border border-border-default hover:border-border-hover focus:border-[#00b578] bg-bg-app text-text-default placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-[#00b578]/20 transition-all duration-150"
         />
+        <span class="absolute left-2.5 text-text-muted pointer-events-none group-focus-within:text-[#00b578]">
+          <Icon name="search" size={13} />
+        </span>
+        {#if emulatorsStore.searchQuery}
+          <button
+            type="button"
+            onclick={() => (emulatorsStore.searchQuery = "")}
+            class="absolute right-2 text-text-muted hover:text-text-hover p-0.5 rounded-md cursor-pointer flex items-center justify-center transition-colors"
+          >
+            <Icon name="close" size={11} />
+          </button>
+        {/if}
       </div>
 
-      <!-- Refresh Button -->
-      <CustomButton
-        variant="icon"
-        size="icon"
-        title="Refresh Fleet"
+      <!-- Refresh Fleet Button -->
+      <button
+        type="button"
+        title="Refresh Fleet Telemetry"
         onclick={() => emulatorsStore.refresh()}
+        class="w-8.5 h-8.5 rounded-xl border border-border-default hover:border-border-hover bg-bg-app hover:bg-bg-card flex items-center justify-center text-text-muted hover:text-text-hover transition-all cursor-pointer active:scale-95 shadow-xs"
       >
         <Icon
           name="refresh"
-          size={14}
-          class={emulatorsStore.isLoading ? "animate-spin" : ""}
+          size={13}
+          class={emulatorsStore.isLoading ? "animate-spin text-[#00b578]" : ""}
         />
-      </CustomButton>
+      </button>
     </div>
   </div>
 

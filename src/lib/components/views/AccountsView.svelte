@@ -11,6 +11,7 @@ import Icon from "../ui/Icon.svelte";
 let showImportModal = $state(false);
 let showProxyModal = $state(false);
 let importInput = $state("");
+let accountSearchQuery = $state("");
 
 let columns = $state<ColumnConfig[]>([
   { key: "index", label: "Index", visible: true, canHide: true, width: 60, align: "center" },
@@ -24,6 +25,18 @@ let columns = $state<ColumnConfig[]>([
   { key: "actions", label: "Actions", visible: true, canHide: false, width: 80, align: "right" },
 ]);
 
+let filteredAccounts = $derived(
+  accountsStore.accounts.filter((acc) => {
+    const q = accountSearchQuery.toLowerCase().trim();
+    if (!q) return true;
+    return (
+      acc.uid.toLowerCase().includes(q) ||
+      acc.username?.toLowerCase().includes(q) ||
+      acc.proxy?.toLowerCase().includes(q)
+    );
+  })
+);
+
 function handleImport() {
   if (!importInput.trim()) return;
   accountsStore.batchImport(importInput.split("\n"));
@@ -32,34 +45,65 @@ function handleImport() {
 }
 </script>
 
-<div class="flex-1 flex flex-col h-full gap-3 overflow-hidden font-sans">
-  <!-- Accounts Command Toolbar -->
+<div class="flex-1 flex flex-col h-full gap-3 overflow-hidden font-sans select-none">
+  <!-- Accounts Command Toolbar (Modern & Premium) -->
   <div
-    class="flex flex-wrap items-center justify-between gap-3 p-3 bg-bg-panel border border-border-default rounded-2xl shadow-xs"
+    class="flex flex-wrap items-center justify-between gap-3 p-2.5 px-3.5 bg-bg-panel/95 backdrop-blur-md border border-border-default rounded-2xl shadow-xs shrink-0"
   >
     <div class="flex items-center gap-2">
-      <!-- Import Accounts Button (Brand Blue) -->
-      <CustomButton
-        variant="blue"
-        size="md"
+      <!-- Import Accounts Button (Brand Blue Gradient) -->
+      <button
+        type="button"
         onclick={() => (showImportModal = true)}
+        class="inline-flex items-center justify-center gap-1.5 h-8.5 px-4 rounded-xl text-xs font-bold text-white bg-gradient-to-b from-[#2583ff] to-[#1877f2] hover:from-[#3890ff] hover:to-[#166fe5] active:scale-[0.98] border border-[#1877f2] shadow-[0_2px_10px_rgba(24,119,242,0.25),inset_0_1px_0_rgba(255,255,255,0.2)] transition-all cursor-pointer"
       >
-        <Icon name="plus" size={14} />
+        <Icon name="plus" size={13} />
         <span>Import Accounts</span>
-      </CustomButton>
+      </button>
 
-      <CustomButton
-        variant="secondary"
-        size="sm"
+      <div class="h-4.5 w-px bg-border-default/80 mx-0.5"></div>
+
+      <!-- Proxy Pool Action -->
+      <button
+        type="button"
         onclick={() => (showProxyModal = true)}
+        class="inline-flex items-center gap-1.5 h-8.5 px-3 rounded-xl text-xs font-semibold bg-bg-card hover:bg-bg-card-hover border border-border-default hover:border-border-hover text-text-muted hover:text-text-hover transition-all cursor-pointer active:scale-95 shadow-xs"
       >
-        <Icon name="network" size={12} />
+        <Icon name="network" size={12} class="text-[#1877f2]" />
         <span>Proxy Pool ({proxiesStore.proxies.length})</span>
-      </CustomButton>
+      </button>
     </div>
 
-    <div class="text-xs font-mono text-text-muted">
-      Total Accounts: <strong class="text-text-hover">{accountsStore.accounts.length}</strong>
+    <!-- Right: Search & Telemetry -->
+    <div class="flex items-center gap-3">
+      <!-- Search Input -->
+      <div class="relative flex items-center h-8.5 w-52 group">
+        <input
+          type="text"
+          placeholder="Search accounts..."
+          bind:value={accountSearchQuery}
+          class="w-full h-8.5 pl-8 pr-7 text-xs font-medium rounded-xl border border-border-default hover:border-border-hover focus:border-[#1877f2] bg-bg-app text-text-default placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-[#1877f2]/20 transition-all duration-150"
+        />
+        <span class="absolute left-2.5 text-text-muted pointer-events-none group-focus-within:text-[#1877f2]">
+          <Icon name="search" size={13} />
+        </span>
+        {#if accountSearchQuery}
+          <button
+            type="button"
+            onclick={() => (accountSearchQuery = "")}
+            class="absolute right-2 text-text-muted hover:text-text-hover p-0.5 rounded-md cursor-pointer flex items-center justify-center transition-colors"
+          >
+            <Icon name="close" size={11} />
+          </button>
+        {/if}
+      </div>
+
+      <div
+        class="h-8.5 px-3 rounded-xl bg-bg-app border border-border-default text-xs font-mono text-text-muted flex items-center gap-1.5"
+      >
+        <span>Accounts:</span>
+        <strong class="text-text-hover font-bold">{accountsStore.accounts.length}</strong>
+      </div>
     </div>
   </div>
 
@@ -67,7 +111,7 @@ function handleImport() {
   <div class="flex-1 overflow-hidden flex flex-col min-h-0">
     <BaseTable
       bind:columns
-      items={accountsStore.accounts}
+      items={filteredAccounts}
       bind:selectedKeys={accountsStore.selectedUids}
       itemKey="uid"
     >
