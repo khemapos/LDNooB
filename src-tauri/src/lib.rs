@@ -39,6 +39,7 @@ pub fn run() {
             remove_emulator,
             rename_emulator,
             sort_windows,
+            toggle_emulators_visibility,
             modify_emulator,
             // Proxy
             check_proxy,

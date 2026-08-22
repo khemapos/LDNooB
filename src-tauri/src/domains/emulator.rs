@@ -271,10 +271,314 @@ pub async fn rename_emulator(ldplayer_dir: String, index: i32, title: String) ->
     Ok(())
 }
 
-#[tauri::command]
-pub async fn sort_windows(ldplayer_dir: String) -> Result<(), String> {
-    run_ldconsole_cmd(&ldplayer_dir, &["sortWnd"]).await?;
+fn parse_hwnd(value: &str) -> Result<isize, String> {
+    let trimmed = value.trim();
+    if let Some(hex) = trimmed
+        .strip_prefix("0x")
+        .or_else(|| trimmed.strip_prefix("0X"))
+    {
+        isize::from_str_radix(hex, 16).map_err(|_| format!("Invalid window handle: {value}"))
+    } else {
+        trimmed
+            .parse::<isize>()
+            .map_err(|_| format!("Invalid window handle: {value}"))
+    }
+}
+
+#[cfg(target_os = "windows")]
+fn fit_arranged_window_size(
+    max_window_width: i32,
+    max_window_height: i32,
+    horizontal_chrome: i32,
+    vertical_chrome: i32,
+    resolution_width: i32,
+    resolution_height: i32,
+) -> (i32, i32) {
+    let max_window_width = max_window_width.max(1);
+    let max_window_height = max_window_height.max(1);
+    let horizontal_chrome = horizontal_chrome.clamp(0, max_window_width - 1);
+    let vertical_chrome = vertical_chrome.clamp(0, max_window_height - 1);
+    let resolution_width = resolution_width.max(1);
+    let resolution_height = resolution_height.max(1);
+    let max_content_width = (max_window_width - horizontal_chrome).max(1);
+    let max_content_height = (max_window_height - vertical_chrome).max(1);
+
+    let scale_dimension = |value: i32, numerator: i32, denominator: i32| {
+        ((i64::from(value) * i64::from(numerator)) / i64::from(denominator))
+            .clamp(1, i64::from(i32::MAX)) as i32
+    };
+
+    let mut content_width = max_content_width;
+    let mut content_height = scale_dimension(content_width, resolution_height, resolution_width);
+    if content_height > max_content_height {
+        content_height = max_content_height;
+        content_width = scale_dimension(content_height, resolution_width, resolution_height)
+            .min(max_content_width);
+    }
+
+    (
+        (content_width + horizontal_chrome).min(max_window_width),
+        (content_height + vertical_chrome).min(max_window_height),
+    )
+}
+
+#[cfg(target_os = "windows")]
+fn arrange_windows_win32(
+    hwnds: &[String],
+    bind_hwnds: &[String],
+    resolution_widths: &[i32],
+    resolution_heights: &[i32],
+    cols: i32,
+) -> Result<(), String> {
+    use windows_sys::Win32::Foundation::RECT;
+    use windows_sys::Win32::UI::WindowsAndMessaging::{
+        GetClientRect, GetSystemMetrics, GetWindowRect, IsWindow, SetWindowPos, ShowWindow,
+        SystemParametersInfoW, SM_CXSCREEN, SM_CYSCREEN, SPI_GETWORKAREA, SWP_NOACTIVATE,
+        SWP_NOZORDER, SW_RESTORE,
+    };
+
+    struct ArrangeTarget {
+        hwnd: isize,
+        bind_hwnd: Option<isize>,
+        resolution_width: i32,
+        resolution_height: i32,
+    }
+
+    let columns = cols.max(1);
+    let mut seen = std::collections::HashSet::new();
+    let valid_targets = hwnds
+        .iter()
+        .enumerate()
+        .filter_map(|(index, raw_hwnd)| {
+            let hwnd = parse_hwnd(raw_hwnd).ok()?;
+            if unsafe { IsWindow(hwnd) } == 0 || !seen.insert(hwnd) {
+                return None;
+            }
+            let bind_hwnd = bind_hwnds
+                .get(index)
+                .and_then(|raw_bind_hwnd| parse_hwnd(raw_bind_hwnd).ok())
+                .filter(|bind_hwnd| unsafe { IsWindow(*bind_hwnd) } != 0);
+            Some(ArrangeTarget {
+                hwnd,
+                bind_hwnd,
+                resolution_width: resolution_widths.get(index).copied().unwrap_or(0),
+                resolution_height: resolution_heights.get(index).copied().unwrap_or(0),
+            })
+        })
+        .collect::<Vec<_>>();
+
+    if valid_targets.is_empty() {
+        return Err("No valid emulator windows are ready to arrange.".to_string());
+    }
+
+    let mut work_area = RECT {
+        left: 0,
+        top: 0,
+        right: unsafe { GetSystemMetrics(SM_CXSCREEN) }.max(1),
+        bottom: unsafe { GetSystemMetrics(SM_CYSCREEN) }.max(1),
+    };
+    unsafe {
+        SystemParametersInfoW(
+            SPI_GETWORKAREA,
+            0,
+            &mut work_area as *mut RECT as *mut core::ffi::c_void,
+            0,
+        );
+    }
+
+    let work_width = (work_area.right - work_area.left).max(1);
+    let work_height = (work_area.bottom - work_area.top).max(1);
+    let rows = ((valid_targets.len() as i32 + columns - 1) / columns).max(1);
+    let gap = 1;
+    let mut arranged_count = 0;
+    let mut last_error = None;
+
+    for (position, target) in valid_targets.into_iter().enumerate() {
+        let column = position as i32 % columns;
+        let row = position as i32 / columns;
+        let cell_left = work_area.left + column * work_width / columns;
+        let cell_right = work_area.left + (column + 1) * work_width / columns;
+        let cell_top = work_area.top + row * work_height / rows;
+        let cell_bottom = work_area.top + (row + 1) * work_height / rows;
+        let max_window_width = (cell_right - cell_left - gap).max(1);
+        let max_window_height = (cell_bottom - cell_top - gap).max(1);
+
+        let mut horizontal_chrome = 0;
+        let mut vertical_chrome = 0;
+        let mut current_content_width = 0;
+        let mut current_content_height = 0;
+        if let Some(bind_hwnd) = target.bind_hwnd {
+            let mut window_rect = RECT {
+                left: 0,
+                top: 0,
+                right: 0,
+                bottom: 0,
+            };
+            let mut client_rect = window_rect;
+            let mut bind_rect = window_rect;
+            let has_window_rect = unsafe { GetWindowRect(target.hwnd, &mut window_rect) } != 0;
+            let has_client_rect = unsafe { GetClientRect(target.hwnd, &mut client_rect) } != 0;
+            let has_bind_rect = unsafe { GetWindowRect(bind_hwnd, &mut bind_rect) } != 0;
+
+            if has_window_rect && has_client_rect && has_bind_rect {
+                let outer_width = (window_rect.right - window_rect.left).max(1);
+                let outer_height = (window_rect.bottom - window_rect.top).max(1);
+                let client_width = (client_rect.right - client_rect.left).max(1);
+                let client_height = (client_rect.bottom - client_rect.top).max(1);
+                current_content_width = (bind_rect.right - bind_rect.left).max(1);
+                current_content_height = (bind_rect.bottom - bind_rect.top).max(1);
+
+                horizontal_chrome = (outer_width - current_content_width).max(0);
+                let toolbar_width = (client_width - current_content_width).max(0);
+                let native_vertical_border = (outer_height - client_height).max(0);
+                vertical_chrome = toolbar_width + native_vertical_border;
+            }
+        }
+
+        let mut resolution_width = target.resolution_width;
+        let mut resolution_height = target.resolution_height;
+        if resolution_width <= 0 || resolution_height <= 0 {
+            resolution_width = current_content_width;
+            resolution_height = current_content_height;
+        }
+        if resolution_width <= 0 || resolution_height <= 0 {
+            resolution_width = 9;
+            resolution_height = 16;
+        }
+        let configured_landscape = resolution_width > resolution_height;
+        let current_landscape = current_content_width > current_content_height;
+        if current_content_width > 0
+            && current_content_height > 0
+            && configured_landscape != current_landscape
+        {
+            std::mem::swap(&mut resolution_width, &mut resolution_height);
+        }
+
+        let (width, height) = fit_arranged_window_size(
+            max_window_width,
+            max_window_height,
+            horizontal_chrome,
+            vertical_chrome,
+            resolution_width,
+            resolution_height,
+        );
+        let x = cell_left + ((cell_right - cell_left - width) / 2).max(0);
+
+        unsafe {
+            ShowWindow(target.hwnd, SW_RESTORE);
+            if SetWindowPos(
+                target.hwnd,
+                0,
+                x,
+                cell_top,
+                width,
+                height,
+                SWP_NOACTIVATE | SWP_NOZORDER,
+            ) != 0
+            {
+                arranged_count += 1;
+            } else {
+                last_error = Some(std::io::Error::last_os_error().to_string());
+            }
+        }
+    }
+
+    if arranged_count == 0 {
+        return Err(format!(
+            "Windows could not be arranged: {}",
+            last_error.unwrap_or_else(|| "unknown Windows API error".to_string())
+        ));
+    }
+
     Ok(())
+}
+
+#[tauri::command]
+pub async fn sort_windows(
+    ldplayer_dir: String,
+    hwnds: Option<Vec<String>>,
+    bind_hwnds: Option<Vec<String>>,
+    resolution_widths: Option<Vec<i32>>,
+    resolution_heights: Option<Vec<i32>>,
+    cols: Option<i32>,
+) -> Result<(), String> {
+    if let (Some(h), Some(b), Some(rw), Some(rh)) = (hwnds, bind_hwnds, resolution_widths, resolution_heights) {
+        #[cfg(target_os = "windows")]
+        {
+            arrange_windows_win32(&h, &b, &rw, &rh, cols.unwrap_or(4))
+        }
+        #[cfg(not(target_os = "windows"))]
+        {
+            let _ = (h, b, rw, rh, cols);
+            run_ldconsole_cmd(&ldplayer_dir, &["sortWnd"]).await?;
+            Ok(())
+        }
+    } else {
+        run_ldconsole_cmd(&ldplayer_dir, &["sortWnd"]).await?;
+        Ok(())
+    }
+}
+
+#[cfg(target_os = "windows")]
+unsafe extern "system" fn collect_matching_windows(hwnd: isize, context: isize) -> i32 {
+    use windows_sys::Win32::UI::WindowsAndMessaging::{GetWindowTextLengthW, GetWindowTextW};
+
+    let request = &mut *(context as *mut (Vec<String>, Vec<isize>));
+    let title_length = GetWindowTextLengthW(hwnd);
+    if title_length <= 0 {
+        return 1;
+    }
+    let mut title_buffer = vec![0u16; title_length as usize + 1];
+    let copied = GetWindowTextW(hwnd, title_buffer.as_mut_ptr(), title_buffer.len() as i32);
+    if copied <= 0 {
+        return 1;
+    }
+    let title = String::from_utf16_lossy(&title_buffer[..copied as usize]);
+    if request
+        .0
+        .iter()
+        .any(|name| !name.is_empty() && title.contains(name))
+    {
+        request.1.push(hwnd);
+    }
+    1
+}
+
+#[tauri::command]
+pub async fn toggle_emulators_visibility(running_names: Vec<String>) -> Result<bool, String> {
+    #[cfg(target_os = "windows")]
+    {
+        use windows_sys::Win32::UI::WindowsAndMessaging::{
+            EnumWindows, IsWindowVisible, ShowWindow, SW_HIDE, SW_RESTORE,
+        };
+
+        let mut request = (running_names, Vec::<isize>::new());
+        unsafe {
+            EnumWindows(
+                Some(collect_matching_windows),
+                &mut request as *mut (Vec<String>, Vec<isize>) as isize,
+            );
+        }
+        if request.1.is_empty() {
+            return Err("No running emulator windows were found".to_string());
+        }
+
+        let should_hide = request
+            .1
+            .iter()
+            .any(|hwnd| unsafe { IsWindowVisible(*hwnd) } != 0);
+        for hwnd in request.1 {
+            unsafe {
+                ShowWindow(hwnd, if should_hide { SW_HIDE } else { SW_RESTORE });
+            }
+        }
+        Ok(should_hide)
+    }
+    #[cfg(not(target_os = "windows"))]
+    {
+        let _ = running_names;
+        Err("Window visibility controls are only supported on Windows".to_string())
+    }
 }
 
 #[tauri::command]

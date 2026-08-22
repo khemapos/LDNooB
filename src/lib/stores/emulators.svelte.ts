@@ -10,6 +10,8 @@ class EmulatorsStore {
   filterStatus = $state<EmulatorFilterStatus>("all");
   searchQuery = $state("");
   selectedGroup = $state("all");
+  autoArrange = $state(false);
+  arrangeCols = $state(4);
   private pollTimer: ReturnType<typeof setInterval> | null = null;
 
   filteredInstances = $derived<Emulator[]>(
@@ -95,8 +97,12 @@ class EmulatorsStore {
       logsStore.success("Instance", `Launched emulator #${index}`);
 
       setTimeout(() => this.syncStatusSilent(), 800);
-      setTimeout(() => this.syncStatusSilent(), 2000);
-      setTimeout(() => this.syncStatusSilent(), 4000);
+      setTimeout(() => {
+        this.syncStatusSilent();
+        if (this.autoArrange) {
+          this.sortWindows();
+        }
+      }, 2500);
     } catch (e) {
       logsStore.error("Instance", `Failed to launch emulator #${index}: ${e}`);
       this.syncStatusSilent();
@@ -151,13 +157,51 @@ class EmulatorsStore {
     }
   }
 
-  async sortWindows() {
+  async sortWindows(cols: number = this.arrangeCols) {
     try {
       const path = settingsStore.settings.ldplayerPath;
-      await invoke("sort_windows", { ldplayerDir: path });
-      logsStore.info("Windows", "Arranged emulator windows on screen");
+      const running = this.instances.filter((i) => i.is_running);
+      if (running.length === 0) {
+        logsStore.warn("Windows", "No running emulator windows to arrange");
+        return;
+      }
+
+      const hwnds = running.map((i) => i.top_hwnd);
+      const bindHwnds = running.map((i) => i.bind_hwnd);
+      const resWidths = running.map((i) => i.width || 540);
+      const resHeights = running.map((i) => i.height || 960);
+
+      await invoke("sort_windows", {
+        ldplayerDir: path,
+        hwnds,
+        bindHwnds,
+        resolutionWidths: resWidths,
+        resolutionHeights: resHeights,
+        cols: cols || this.arrangeCols || 4,
+      });
+      logsStore.info("Windows", `Arranged ${running.length} emulator windows in ${cols} columns`);
     } catch (e) {
       logsStore.error("Windows", `Failed to arrange windows: ${e}`);
+    }
+  }
+
+  async toggleVisibility() {
+    try {
+      const running = this.instances.filter((i) => i.is_running);
+      if (running.length === 0) {
+        logsStore.warn("Windows", "No running emulator windows found");
+        return;
+      }
+      const runningNames = running.map((i) => i.name);
+      const isHidden = await invoke<boolean>("toggle_emulators_visibility", {
+        runningNames,
+      });
+      logsStore.info(
+        "Windows",
+        isHidden ? "Hidden emulator windows" : "Restored emulator windows to screen"
+      );
+    } catch (e) {
+      logsStore.error("Windows", `Failed to toggle window visibility: ${e}`);
     }
   }
 

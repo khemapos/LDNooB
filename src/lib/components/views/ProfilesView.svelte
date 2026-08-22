@@ -124,16 +124,67 @@ $effect(() => {
           <Icon name="edit" size={12} />
           <span>Rename</span>
         </button>
+      </div>
+      <!-- Window Arrangement & Visibility Controls (matching D:\ldremote) -->
+      <div class="flex items-center gap-2">
+        <!-- Auto / Cols / Arrange Multi-segment Pill -->
+        <div
+          class="flex items-center h-8.5 rounded-xl border border-border-default bg-bg-app overflow-hidden shadow-xs"
+        >
+          <!-- Auto Arrange Checkbox -->
+          <label
+            class="flex items-center gap-1.5 px-3 h-full border-r border-border-default/60 hover:bg-bg-card/50 cursor-pointer select-none"
+          >
+            <input
+              type="checkbox"
+              bind:checked={emulatorsStore.autoArrange}
+              class="custom-checkbox shrink-0 cursor-pointer"
+            />
+            <span
+              class="text-[10px] font-extrabold uppercase tracking-wider text-text-muted"
+            >
+              Auto
+            </span>
+          </label>
 
-        <!-- Arrange Windows -->
+          <!-- Cols Input -->
+          <div class="flex items-center pl-2.5 pr-1 h-full">
+            <span
+              class="select-none text-[10px] font-extrabold uppercase tracking-wider text-text-muted mr-1"
+            >
+              Cols
+            </span>
+            <input
+              type="number"
+              min="1"
+              max="20"
+              bind:value={emulatorsStore.arrangeCols}
+              class="w-7 bg-transparent border-none outline-none text-center text-xs font-mono font-bold text-text-hover p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            />
+          </div>
+
+          <div class="h-4 border-r border-border-default/60"></div>
+
+          <!-- Arrange Button -->
+          <button
+            type="button"
+            onclick={() => emulatorsStore.sortWindows()}
+            title="Arrange emulator windows"
+            class="flex items-center gap-1.5 px-3 h-full bg-bg-card/40 hover:bg-bg-card hover:text-text-hover text-text-default text-xs font-bold transition-colors cursor-pointer border-none"
+          >
+            <Icon name="grid" size={13} class="text-[#00b578]" />
+            <span>Arrange</span>
+          </button>
+        </div>
+
+        <!-- Green Eye Button (Toggle Visibility) -->
         <button
           type="button"
-          onclick={() => emulatorsStore.sortWindows()}
-          class="inline-flex items-center gap-1.5 h-8.5 px-3 rounded-xl text-xs font-semibold bg-bg-card hover:bg-bg-card-hover border border-border-default hover:border-border-hover text-text-muted hover:text-text-hover transition-all cursor-pointer active:scale-95 shadow-xs"
-          title="Automatically tile and arrange all running emulator windows"
+          onclick={() => emulatorsStore.toggleVisibility()}
+          title="Toggle Show/Hide Running Emulators"
+          class="w-8.5 h-8.5 rounded-xl border border-[#00b578]/40 hover:border-[#00b578] bg-[#00b578]/10 hover:bg-[#00b578]/20 flex items-center justify-center text-[#00b578] transition-all cursor-pointer active:scale-95 shadow-xs"
         >
-          <Icon name="sort" size={12} />
-          <span>Arrange Windows</span>
+          <Icon name="eye" size={15} />
         </button>
       </div>
     </div>
