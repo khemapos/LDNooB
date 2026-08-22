@@ -22,23 +22,23 @@ const tabs: { id: ActiveTab; label: string; icon: any; badge?: number }[] = $der
 ]);
 </script>
 
-<div class="w-full h-12 border-b border-border-default flex items-center justify-between px-4 select-none shrink-0 bg-bg-panel font-sans">
-  <!-- Left Side: Main Navigation Tabs matching D:\ldremote -->
-  <div class="flex items-center gap-1.5">
+<div class="w-full h-9 border-b border-border-default flex items-center justify-between px-3 select-none shrink-0 bg-bg-panel font-sans">
+  <!-- Left Side: Compact Navigation Tabs -->
+  <div class="flex items-center gap-1">
     {#each tabs as tab}
       {@const isActive = activeTab === tab.id}
       <button
         type="button"
         onclick={() => onTabChange(tab.id)}
-        class="flex items-center gap-2 px-3.5 py-1.5 rounded-xl font-bold tracking-wide uppercase transition-all duration-200 cursor-pointer {isActive
+        class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold tracking-wide uppercase transition-all duration-150 cursor-pointer {isActive
           ? 'text-[#00b578] bg-[#00b578]/10'
-          : 'text-text-muted hover:text-text-hover hover:bg-bg-card/30'}"
+          : 'text-text-muted hover:text-text-hover hover:bg-bg-card/40'}"
       >
-        <Icon name={tab.icon} size={14} />
+        <Icon name={tab.icon} size={13} />
         <span>{tab.label}</span>
         {#if tab.badge !== undefined && tab.badge > 0}
           <span
-            class="px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold transition-colors duration-150 {isActive
+            class="px-1.5 py-0.2 rounded-full text-[9.5px] font-mono font-bold transition-colors duration-150 {isActive
               ? 'bg-[#00b578]/20 text-[#00b578]'
               : 'bg-bg-app text-text-muted'}"
           >
@@ -49,37 +49,35 @@ const tabs: { id: ActiveTab; label: string; icon: any; badge?: number }[] = $der
     {/each}
   </div>
 
-  <!-- Right Side: Telemetry Pill & Settings Button matching D:\ldremote -->
-  <div class="flex items-center gap-2.5">
+  <!-- Right Side: Telemetry Pill & Compact Settings Button -->
+  <div class="flex items-center gap-2">
     <!-- Live Running Metrics Pill -->
     <div
-      class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-bg-card/40 border border-border-default text-xs font-mono select-none"
+      class="flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-bg-card/40 border border-border-default text-[10.5px] font-mono select-none"
     >
       <span class="flex items-center gap-1.5 text-[#00b578] font-bold">
-        <span class="w-2 h-2 rounded-full bg-[#00b578] animate-pulse"></span>
+        <span class="w-1.5 h-1.5 rounded-full bg-[#00b578] animate-pulse"></span>
         {emulatorsStore.runningCount} Running
       </span>
-      <span class="text-text-muted opacity-60">•</span>
+      <span class="text-text-muted opacity-50">•</span>
       <span class="text-text-muted">
         {emulatorsStore.runningCount * 2048} MB RAM
       </span>
     </div>
 
-    <!-- Application Settings Button matching D:\ldremote lines 1388-1415 -->
+    <!-- Compact Application Settings Button -->
     <button
       type="button"
       onclick={() => onOpenSettings?.()}
-      class="flex flex-col items-center justify-center gap-0.5 px-3 py-1 rounded-xl cursor-pointer transition-all duration-200 select-none bg-bg-card/50 hover:bg-bg-card-hover text-text-muted hover:text-text-hover border border-border-default hover:border-border-hover shadow-[0_2px_6px_rgba(0,0,0,0.05)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.1)] active:shadow-[0_1px_3px_rgba(0,0,0,0.05)] h-[38px] min-w-[56px] group active:scale-95"
+      class="flex items-center gap-1.5 px-2.5 h-6.5 rounded-lg cursor-pointer transition-all duration-150 select-none bg-bg-card/50 hover:bg-bg-card-hover text-text-muted hover:text-text-hover border border-border-default hover:border-border-hover text-[10.5px] font-bold shadow-2xs active:scale-95 group"
       title="Application Settings"
     >
       <Icon
         name="settings"
-        size={15}
+        size={12}
         class="text-text-muted group-hover:text-text-hover transition-transform group-hover:rotate-45 duration-300"
       />
-      <span class="text-[9px] font-semibold tracking-wide leading-none">
-        Settings
-      </span>
+      <span class="leading-none">Settings</span>
     </button>
   </div>
 </div>
