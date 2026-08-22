@@ -57,25 +57,43 @@ pub fn app_get_window_size(window: Window) -> Result<WindowDimensions, String> {
 #[cfg(target_os = "windows")]
 #[tauri::command]
 pub fn focus_emulator_window(hwnd_str: String) -> Result<(), String> {
+    select_emulator_window(hwnd_str)
+}
+
+#[cfg(not(target_os = "windows"))]
+#[tauri::command]
+pub fn focus_emulator_window(_hwnd_str: String) -> Result<(), String> {
+    Ok(())
+}
+
+#[cfg(target_os = "windows")]
+#[tauri::command]
+pub fn select_emulator_window(hwnd: String) -> Result<(), String> {
     use windows_sys::Win32::Foundation::HWND;
     use windows_sys::Win32::UI::WindowsAndMessaging::{
         IsWindow, SetForegroundWindow, ShowWindow, SW_RESTORE,
     };
 
-    let hwnd_val = hwnd_str.parse::<isize>().map_err(|e| e.to_string())?;
-    let hwnd = hwnd_val as HWND;
+    let trimmed = hwnd.trim();
+    let hwnd_val = if let Some(hex) = trimmed.strip_prefix("0x").or_else(|| trimmed.strip_prefix("0X")) {
+        isize::from_str_radix(hex, 16).map_err(|_| format!("Invalid window handle: {hwnd}"))?
+    } else {
+        trimmed.parse::<isize>().map_err(|_| format!("Invalid window handle: {hwnd}"))?
+    };
+
+    let hwnd_handle = hwnd_val as HWND;
     unsafe {
-        if IsWindow(hwnd) == 0 {
+        if IsWindow(hwnd_handle) == 0 {
             return Err("Window handle is invalid or closed".into());
         }
-        ShowWindow(hwnd, SW_RESTORE);
-        SetForegroundWindow(hwnd);
+        ShowWindow(hwnd_handle, SW_RESTORE);
+        SetForegroundWindow(hwnd_handle);
     }
     Ok(())
 }
 
 #[cfg(not(target_os = "windows"))]
 #[tauri::command]
-pub fn focus_emulator_window(_hwnd_str: String) -> Result<(), String> {
+pub fn select_emulator_window(_hwnd: String) -> Result<(), String> {
     Ok(())
 }

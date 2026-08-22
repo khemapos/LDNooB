@@ -102,6 +102,19 @@ function handleStopTasks() {
   isRunningTasks = false;
   logsStore.warn("Workflow", "Stopping active task execution...");
 }
+
+let prevSelectedUids = $state<string[]>([]);
+$effect(() => {
+  const current = accountsStore.selectedUids;
+  const newlySelected = current.filter((uid) => !prevSelectedUids.includes(uid));
+  prevSelectedUids = [...current];
+  if (newlySelected.length === 1 && current.length === 1) {
+    const acc = accountsStore.accounts.find((a) => a.uid === newlySelected[0]);
+    if (acc && acc.emuIndex >= 0) {
+      emulatorsStore.focusIfSingleSelected(acc.emuIndex);
+    }
+  }
+});
 </script>
 
 <div class="flex-1 flex flex-col h-full gap-3 overflow-hidden font-sans select-none">
@@ -186,21 +199,18 @@ function handleStopTasks() {
         </button>
       </div>
 
-      <!-- Green Eye Button (Toggle Visibility) -->
+      <!-- Auto Show Active on Select Toggle (matching D:\ldremote) -->
       <button
         type="button"
-        onclick={() => emulatorsStore.toggleVisibility()}
-        title={emulatorsStore.isEmulatorsHidden
-          ? "Show/Restore Running Emulators"
-          : "Hide Running Emulators"}
-        class="w-8.5 h-8.5 rounded-xl border flex items-center justify-center transition-all cursor-pointer active:scale-95 shadow-xs {emulatorsStore.isEmulatorsHidden
-          ? 'border-[#ff4d4f]/50 bg-[#ff4d4f]/15 text-[#ff4d4f]'
-          : 'border-[#00b578]/40 hover:border-[#00b578] bg-[#00b578]/10 hover:bg-[#00b578]/20 text-[#00b578]'}"
+        onclick={() => emulatorsStore.toggleShowActiveOnSelect()}
+        title={emulatorsStore.showActiveOnSelect
+          ? "Disable auto-focusing running LDPlayer on select"
+          : "Enable auto-focusing running LDPlayer on select"}
+        class="w-8.5 h-8.5 rounded-xl border flex items-center justify-center transition-all cursor-pointer active:scale-95 shadow-xs {emulatorsStore.showActiveOnSelect
+          ? 'border-[#00b578] text-[#00b578] bg-[#00b578]/10 hover:bg-[#00b578]/15'
+          : 'border-border-default text-text-muted bg-bg-card hover:border-border-hover hover:text-text-hover'}"
       >
-        <Icon
-          name={emulatorsStore.isEmulatorsHidden ? "eyeOff" : "eye"}
-          size={15}
-        />
+        <Icon name="eye" size={15} />
       </button>
     </div>
 

@@ -12,6 +12,12 @@ class EmulatorsStore {
   selectedGroup = $state("all");
   autoArrange = $state(false);
   arrangeCols = $state(4);
+  showActiveOnSelect = $state(
+    typeof localStorage !== "undefined"
+      ? localStorage.getItem("settings_show_active_on_select") !== "false"
+      : true
+  );
+  isEmulatorsHidden = $state(false);
   private pollTimer: ReturnType<typeof setInterval> | null = null;
 
   filteredInstances = $derived<Emulator[]>(
@@ -185,7 +191,26 @@ class EmulatorsStore {
     }
   }
 
-  isEmulatorsHidden = $state(false);
+  toggleShowActiveOnSelect() {
+    this.showActiveOnSelect = !this.showActiveOnSelect;
+    if (typeof localStorage !== "undefined") {
+      localStorage.setItem("settings_show_active_on_select", String(this.showActiveOnSelect));
+    }
+    logsStore.info(
+      "Settings",
+      this.showActiveOnSelect
+        ? "Enabled auto-focusing running LDPlayer on select"
+        : "Disabled auto-focusing running LDPlayer on select"
+    );
+  }
+
+  focusIfSingleSelected(index: number) {
+    if (!this.showActiveOnSelect) return;
+    const emu = this.instances.find((i) => i.index === index);
+    if (emu?.is_running && emu.top_hwnd && emu.top_hwnd !== "0" && emu.top_hwnd !== "-1") {
+      invoke("select_emulator_window", { hwnd: emu.top_hwnd }).catch(() => {});
+    }
+  }
 
   async toggleVisibility() {
     try {
@@ -269,6 +294,9 @@ class EmulatorsStore {
       this.selectedIndices = this.selectedIndices.filter((i) => i !== index);
     } else {
       this.selectedIndices = [...this.selectedIndices, index];
+    }
+    if (this.selectedIndices.length === 1) {
+      this.focusIfSingleSelected(this.selectedIndices[0]);
     }
   }
 

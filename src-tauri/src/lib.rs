@@ -57,7 +57,8 @@ pub fn run() {
             app_is_maximized,
             app_set_window_size,
             app_get_window_size,
-            focus_emulator_window
+            focus_emulator_window,
+            select_emulator_window
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
