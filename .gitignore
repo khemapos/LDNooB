@@ -14,7 +14,12 @@ src-tauri/target/
 src-tauri/gen/schemas/
 target/
 
-# OS & Logs
+# OS, Logs & Archives
 .DS_Store
 Thumbs.db
 *.log
+*.zip
+*.tar.gz
+*.7z
+*.rar
+
