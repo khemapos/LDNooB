@@ -17,26 +17,29 @@ onMount(async () => {
 });
 </script>
 
-<main class="flex-1 w-full h-full flex flex-col p-3 gap-3 overflow-hidden select-none">
-  <!-- Top Navigation Bar -->
-  <div class="flex items-center justify-between shrink-0">
-    <NavigationTabs
-      bind:activeTab
-      onTabChange={(t) => (activeTab = t)}
-    />
+<div class="flex-1 w-full h-full flex flex-col overflow-hidden select-none">
+  <!-- Padded View Area: Navigation & Content -->
+  <div class="flex-1 w-full flex flex-col p-3 gap-3 overflow-hidden min-h-0">
+    <!-- Top Navigation Bar -->
+    <div class="flex items-center justify-between shrink-0">
+      <NavigationTabs
+        bind:activeTab
+        onTabChange={(t) => (activeTab = t)}
+      />
+    </div>
+
+    <!-- Active Viewport Container -->
+    <div class="flex-1 overflow-hidden flex flex-col min-h-0">
+      {#if activeTab === "profiles"}
+        <ProfilesView />
+      {:else if activeTab === "accounts"}
+        <AccountsView />
+      {:else if activeTab === "settings"}
+        <SettingsView />
+      {/if}
+    </div>
   </div>
 
-  <!-- Active Viewport Container -->
-  <div class="flex-1 overflow-hidden flex flex-col min-h-0">
-    {#if activeTab === "profiles"}
-      <ProfilesView />
-    {:else if activeTab === "accounts"}
-      <AccountsView />
-    {:else if activeTab === "settings"}
-      <SettingsView />
-    {/if}
-  </div>
-
-  <!-- Diagnostic Activity Log Console -->
+  <!-- Full-Width Activity Log Console (Matching D:\ldremote) -->
   <ActivityLogPanel />
-</main>
+</div>
